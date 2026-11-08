@@ -1,6 +1,6 @@
 {
   "version": "0.0.1",
   "configurations": [
-    { "name": "le-bon-plat", "runtimeExecutable": "npm", "runtimeArgs": ["start", "--prefix", "le-bon-plat-mvp"], "port": 3000 }
+    { "name": "le-bon-plat", "runtimeExecutable": "npm", "runtimeArgs": ["start"], "port": 3000 }
   ]
 }

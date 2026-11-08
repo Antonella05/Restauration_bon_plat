@@ -1,0 +1,311 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Le Bon Plat — Commandez, suivez, savourez</title>
+  <meta name="description" content="Le Bon Plat : commandez vos plats préférés en ligne et suivez votre commande en temps réel jusqu'à la livraison." />
+  <meta name="theme-color" content="#f3ebdc" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link rel="preconnect" href="https://images.unsplash.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="site" data-title-suffix=" — Commandez, suivez, savourez">
+  <a class="skip-link" href="#menu">Aller au menu</a>
+  <div id="app">
+    <!-- ===== NAVBAR ===== -->
+    <header class="navbar" id="navbar">
+      <div class="container nav-inner">
+        <a class="brand" href="#top"><span class="logo" aria-hidden="true" data-brand-logo><svg viewBox="0 0 24 24"><path d="M7 3v7M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3v18M17 3c2 2 3 4 3 7h-3"/></svg></span> <span data-brand="name">Le Bon Plat</span></a>
+        <nav class="nav-links" id="navLinks">
+          <a href="#menu" data-nav>La carte</a>
+          <a href="#how" data-nav>Comment ça marche</a>
+          <a href="#avis" data-nav>Avis</a>
+          <button id="navOrders" class="link-btn hidden" data-view="orders">Mes commandes <span id="ordersDot"></span></button>
+        </nav>
+        <div class="nav-right">
+          <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navLinks">Menu</button>
+          <span class="rt-indicator" id="rtWrap" title="Connexion temps réel" role="status" aria-label="Connexion temps réel inactive">
+            <span class="rt-dot" id="rtDot"></span>
+          </span>
+          <span class="user-chip hidden" id="userChip"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="8" r="3"/><path d="M5 20c.8-3.2 3-5 7-5s6.2 1.8 7 5"/></svg> <span id="userName"></span></span>
+          <button class="btn small secondary hidden" id="logoutBtn">Quitter</button>
+          <button class="btn small" id="loginBtn">Se connecter</button>
+          <a class="staff-link" href="/staff.html" title="Espace staff">Staff</a>
+        </div>
+      </div>
+    </header>
+
+    <span id="top"></span>
+
+    <!-- ===== VUE ACCUEIL (landing + menu) ===== -->
+    <div id="viewHome">
+      <!-- HERO -->
+      <section class="hero">
+        <div class="container hero-grid">
+          <div class="hero-copy">
+            <p class="hero-eyebrow"><span class="pulse" aria-hidden="true"></span><span data-brand="hero_eyebrow">Restaurant · Commande en ligne</span></p>
+            <h1 id="heroTitle">La cuisine que vous aimez,<br/><em>servie à votre table ou chez vous.</em></h1>
+            <p class="hero-lead" data-brand="hero_subtitle">Une carte fraîche préparée à la commande, et le suivi de votre livraison
+               en temps réel — de la cuisine jusqu'à votre porte.</p>
+            <div class="hero-actions">
+              <button class="btn lg" data-scroll="#menu">Voir la carte <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></button>
+              <button class="text-link" data-scroll="#how">Comment ça marche</button>
+            </div>
+            <dl class="hero-facts">
+              <div><dt>Commander</dt><dd>2 min</dd></div>
+              <div><dt>Suivi</dt><dd>En direct</dd></div>
+              <div><dt>Réception</dt><dd id="heroModes">Livraison ou retrait</dd></div>
+            </dl>
+          </div>
+
+          <div class="hero-art" aria-hidden="true">
+            <div class="hero-photo"></div>
+            <svg class="stamp" viewBox="0 0 140 140">
+              <defs><path id="stampCircle" d="M70 70m-52 0a52 52 0 1 1 104 0a52 52 0 1 1-104 0"/></defs>
+              <circle cx="70" cy="70" r="68" class="stamp-bg"/>
+              <text class="stamp-text"><textPath href="#stampCircle" textLength="322" lengthAdjust="spacing">Cuisiné à la commande · Servi bien chaud · </textPath></text>
+              <path class="stamp-fork" d="M62 54v12M57 54v8a5 5 0 0 0 10 0v-8M62 67v20M78 54v33M78 54c3 3 5 7 5 12h-5"/>
+            </svg>
+            <div class="menu-card-wrap"><div class="menu-card">
+              <div class="mc-kicker">L'ardoise du jour</div>
+              <div class="mc-title" data-brand="name">Le Bon Plat</div>
+              <div id="heroMenuLines">
+                <div class="mc-line"><span class="n">Poulet braisé</span><span class="d"></span><span class="p">3 500</span></div>
+                <div class="mc-line"><span class="n">Pizza Reine</span><span class="d"></span><span class="p">5 000</span></div>
+                <div class="mc-line"><span class="n">Poisson braisé</span><span class="d"></span><span class="p">4 000</span></div>
+                <div class="mc-line"><span class="n">Coupe de fruits</span><span class="d"></span><span class="p">1 800</span></div>
+              </div>
+              <div class="mc-foot">Prix en FCFA</div>
+            </div></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- BANDEAU DÉFILANT -->
+      <div class="ticker" aria-hidden="true">
+        <div class="ticker-track">
+          <span>Cuisiné à la commande</span><span>Livraison ou retrait au comptoir</span><span>Suivi en temps réel</span><span>Paiement à la réception</span>
+          <span>Cuisiné à la commande</span><span>Livraison ou retrait au comptoir</span><span>Suivi en temps réel</span><span>Paiement à la réception</span>
+        </div>
+      </div>
+
+      <!-- LA MAISON -->
+      <section class="container manifesto">
+        <figure class="manifesto-photo">
+          <img src="https://images.unsplash.com/photo-1581349485608-9469926a8e5e?auto=format&fit=crop&w=900&q=70" alt="Un cuisinier dresse des assiettes en cuisine" loading="lazy" />
+          <figcaption>En cuisine, chaque commande a son bon.</figcaption>
+        </figure>
+        <div class="manifesto-copy">
+          <p class="kicker">La maison</p>
+          <p class="manifesto-lead">Ici, rien n'attend sous une lampe chauffante. Chaque plat part en cuisine au moment où vous validez — et vous le suivez <em>jusqu'à votre porte</em>.</p>
+          <ol class="values">
+            <li class="value-card"><span class="v-n">01</span><div><h3>Frais chaque jour</h3><p>Des produits sélectionnés et préparés à la commande.</p></div></li>
+            <li class="value-card"><span class="v-n">02</span><div><h3>Préparation rapide</h3><p>Commande en 2 minutes, préparation lancée aussitôt.</p></div></li>
+            <li class="value-card"><span class="v-n">03</span><div><h3>Suivi en direct</h3><p>Visualisez chaque étape, de la cuisine à la livraison.</p></div></li>
+          </ol>
+        </div>
+      </section>
+
+      <!-- CATÉGORIES -->
+      <section class="container">
+        <header class="section-head split">
+          <div>
+            <p class="kicker">La carte</p>
+            <h2 class="section-title">Par où commencer&nbsp;?</h2>
+          </div>
+          <p class="section-note">Du petit déjeuner au dessert, pour chaque moment de la journée.</p>
+        </header>
+        <div id="catCards" class="cat-cards"></div>
+      </section>
+
+      <!-- PLATS EN VEDETTE -->
+      <section class="container">
+        <header class="section-head split">
+          <div>
+            <p class="kicker">Sélection du chef</p>
+            <h2 class="section-title">Nos incontournables</h2>
+          </div>
+          <button class="text-link" data-scroll="#menu">Toute la carte</button>
+        </header>
+        <div id="featured" class="featured-grid"></div>
+      </section>
+
+      <!-- COMMENT ÇA MARCHE -->
+      <section id="how" class="how-section">
+        <div class="container how-grid">
+          <div class="how-copy">
+            <p class="kicker">Comment ça marche</p>
+            <h2 class="section-title">De la cuisine à votre porte, sans zone d'ombre.</h2>
+            <ol class="steps">
+              <li class="step"><span class="step-n">01</span><div><h3>Choisissez</h3><p>Parcourez la carte et composez votre commande.</p></div></li>
+              <li class="step"><span class="step-n">02</span><div><h3>Commandez</h3><p>Livraison ou retrait sur place : vous choisissez, puis vous validez.</p></div></li>
+              <li class="step"><span class="step-n">03</span><div><h3>On prépare</h3><p>La cuisine reçoit votre bon et lance la préparation aussitôt.</p></div></li>
+              <li class="step"><span class="step-n">04</span><div><h3>Suivez &amp; recevez</h3><p>Chaque étape s'affiche en direct, jusqu'à la livraison ou au comptoir.</p></div></li>
+            </ol>
+          </div>
+
+          <div class="ticket-demo" aria-hidden="true">
+            <div class="ticket">
+              <div class="t-head"><span>Bon de commande</span><b>N° 0427</b></div>
+              <div class="t-meta">Livraison · Akpakpa · 12:42</div>
+              <ul class="t-lines">
+                <li><span>2 × Poulet braisé</span><span>7 000</span></li>
+                <li><span>1 × Jus de bissap</span><span>700</span></li>
+                <li><span>1 × Coupe fruits</span><span>1 800</span></li>
+              </ul>
+              <div class="t-total"><span>Total</span><span>9 500 F</span></div>
+              <ol class="t-track">
+                <li class="done">Reçue</li>
+                <li class="done">Acceptée</li>
+                <li class="current">En préparation</li>
+                <li>En livraison</li>
+                <li>Livrée</li>
+              </ol>
+              <div class="t-stamp">En cuisine</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- MENU COMPLET -->
+      <section id="menu" class="container menu-section">
+        <header class="section-head split">
+          <div>
+            <p class="kicker">Notre carte</p>
+            <h2 class="section-title">Le menu</h2>
+          </div>
+          <p class="section-note">Prix en FCFA. Ajoutez, ajustez, validez quand vous êtes prêt.</p>
+        </header>
+        <div class="menu-layout">
+          <nav id="catTabs" class="cat-tabs" aria-label="Catégories du menu"></nav>
+          <div id="products" class="grid"></div>
+        </div>
+      </section>
+
+      <!-- AVIS -->
+      <section id="avis" class="container avis-section">
+        <header class="section-head">
+          <p class="kicker">Ils en parlent</p>
+          <h2 class="section-title">Ce qu'on nous dit au comptoir</h2>
+        </header>
+        <div class="testimonials">
+          <figure class="testimonial">
+            <blockquote>Commande passée en 2 minutes et suivi jusqu'à la livraison. Bluffant&nbsp;!</blockquote>
+            <figcaption class="who">Awa D.</figcaption>
+          </figure>
+          <figure class="testimonial">
+            <blockquote>Les pizzas sont excellentes et toujours chaudes à l'arrivée.</blockquote>
+            <figcaption class="who">Kevin M.</figcaption>
+          </figure>
+          <figure class="testimonial">
+            <blockquote>Enfin un resto où je vois où en est ma commande, en direct.</blockquote>
+            <figcaption class="who">Fatou S.</figcaption>
+          </figure>
+        </div>
+      </section>
+
+      <!-- VENIR / COMMANDER -->
+      <section class="visit">
+        <div class="container visit-grid">
+          <figure class="visit-photo">
+            <img src="https://images.unsplash.com/photo-1517248135467-4c7edcad34c4?auto=format&fit=crop&w=1100&q=70" alt="Salle du restaurant" loading="lazy" />
+          </figure>
+          <div class="visit-card">
+            <p class="kicker">Sur place ou chez vous</p>
+            <h2>Un petit creux&nbsp;? On s'occupe du reste.</h2>
+            <dl class="visit-info">
+              <div><dt>Adresse</dt><dd data-brand="address">Cotonou, Bénin</dd></div>
+              <div><dt>Horaires</dt><dd data-brand="hours">Lun – Dim : 08h00 – 23h00</dd></div>
+              <div><dt>Téléphone</dt><dd data-brand="phone">90 00 00 00</dd></div>
+            </dl>
+            <button class="btn lg dark" data-scroll="#menu">Commander maintenant</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- FOOTER -->
+      <footer class="site-footer">
+        <div class="container footer-grid">
+          <div>
+            <div class="brand"><span class="logo" aria-hidden="true" data-brand-logo><svg viewBox="0 0 24 24"><path d="M7 3v7M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3v18M17 3c2 2 3 4 3 7h-3"/></svg></span> <span data-brand="name">Le Bon Plat</span></div>
+            <p class="muted" data-brand="tagline">La cuisine que vous aimez, livrée avec le sourire.</p>
+          </div>
+          <div>
+            <h4>Horaires</h4>
+            <p class="muted" data-brand="hours">Lun – Dim : 08h00 – 23h00</p>
+          </div>
+          <div>
+            <h4>Contact</h4>
+            <p class="muted">Tél. <span data-brand="phone">90 00 00 00</span><br/><span data-brand="address">Cotonou, Bénin</span></p>
+          </div>
+          <div>
+            <h4>Espace pro</h4>
+            <p><a href="/staff.html">Connexion staff →</a></p>
+          </div>
+        </div>
+        <div class="footer-word" aria-hidden="true"><span data-brand="name">Le Bon Plat</span></div>
+        <div class="container footer-bottom">
+          <span>© 2026 <span data-brand="name">Le Bon Plat</span>. Tous droits réservés.</span>
+          <span>Photos d'illustration : Unsplash</span>
+        </div>
+      </footer>
+    </div>
+
+    <!-- ===== VUE MES COMMANDES ===== -->
+    <div id="viewOrders" class="container orders-view hidden">
+      <header class="section-head split">
+        <div>
+          <p class="kicker">Suivi en direct</p>
+          <h2 class="section-title">Mes commandes</h2>
+        </div>
+        <button class="btn secondary small" data-view="home">← Retour à l'accueil</button>
+      </header>
+      <div id="ordersList"></div>
+    </div>
+  </div>
+
+  <!-- BOUTON PANIER -->
+  <button id="cartFab" class="cart-fab"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Panier <span id="cartCount" class="cart-badge">0</span></button>
+
+  <!-- TIROIR PANIER / COMMANDE -->
+  <div id="drawerOverlay" class="drawer-overlay" aria-hidden="true"></div>
+  <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="drawerTitle">
+    <header>
+      <h2 id="drawerTitle">Votre panier</h2>
+      <button class="close-x" id="drawerClose" aria-label="Fermer">&times;</button>
+    </header>
+    <div class="content" id="drawerContent"></div>
+    <footer id="drawerFooter"></footer>
+  </aside>
+
+  <!-- MODALE CONNEXION CLIENT -->
+  <div id="loginOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal card" role="dialog" aria-modal="true" aria-labelledby="loginTitle" aria-describedby="loginSub">
+      <button class="close-x modal-close" id="loginClose" aria-label="Fermer">&times;</button>
+      <div class="logo-lg" aria-hidden="true" data-brand-logo><svg viewBox="0 0 24 24"><path d="M7 3v7M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3v18M17 3c2 2 3 4 3 7h-3"/></svg></div>
+      <h2 id="loginTitle">Bienvenue !</h2>
+      <p class="muted" id="loginSub">Entrez votre nom et votre numéro pour commander et suivre votre commande en temps réel.</p>
+      <form id="clientLoginForm" class="mt">
+        <div class="field">
+          <label for="cName">Votre nom</label>
+          <input id="cName" type="text" placeholder="Ex. Awa Diallo" autocomplete="name" required />
+        </div>
+        <div class="field">
+          <label for="cPhone">Téléphone</label>
+          <input id="cPhone" type="tel" placeholder="Ex. 90 00 00 00" autocomplete="tel" required />
+        </div>
+        <button class="btn block" type="submit">Continuer</button>
+      </form>
+      <p class="muted modal-note">Pas de mot de passe — simple et rapide.</p>
+    </div>
+  </div>
+
+  <div id="toasts"></div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/client.js"></script>
+</body>
+</html>

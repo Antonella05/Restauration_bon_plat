@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Le Bon Plat — Espace Staff</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Young+Serif&family=Schibsted+Grotesk:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/css/styles.css" />
+</head>
+<body class="staff" data-title-suffix=" — Espace Staff">
+  <!-- CONNEXION STAFF -->
+  <div id="loginScreen" class="auth-wrap">
+    <aside class="auth-side" aria-hidden="true">
+      <div class="auth-side-text">
+        <span class="kicker">Côté cuisine</span>
+        <p>Chaque bon compte.<br/>Recevez, acceptez, préparez, livrez — en direct.</p>
+      </div>
+    </aside>
+    <div class="auth-card">
+      <div class="logo-lg" aria-hidden="true"><svg viewBox="0 0 24 24"><rect x="5" y="10" width="14" height="10" rx="2"/><path d="M8 10V7a4 4 0 0 1 8 0v3M12 14v3"/></svg></div>
+      <h1>Espace Staff</h1>
+      <p class="muted" style="margin:0 0 4px" data-brand="name"></p>
+      <p class="muted">Call center · Gérant · Administrateur · Développeur</p>
+      <form id="staffLoginForm" class="mt">
+        <div class="field">
+          <label for="username">Identifiant</label>
+          <input id="username" type="text" autocomplete="username" required />
+        </div>
+        <div class="field">
+          <label for="password">Mot de passe</label>
+          <input id="password" type="password" autocomplete="current-password" required />
+        </div>
+        <button class="btn block" type="submit">Se connecter</button>
+      </form>
+      <p class="muted mt" style="font-size:.82rem"><a href="/">← Retour à l'espace client</a></p>
+    </div>
+  </div>
+
+  <!-- TABLEAU DE BORD STAFF -->
+  <div id="app" class="hidden">
+    <header class="topbar">
+      <div class="container">
+        <div class="brand"><span class="logo" aria-hidden="true" data-brand-logo><svg viewBox="0 0 24 24"><path d="M7 3v7M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3v18M17 3c2 2 3 4 3 7h-3"/></svg></span> <span data-brand="name">Le Bon Plat</span> <span style="opacity:.7;font-weight:500">· Staff</span></div>
+        <div class="spacer"></div>
+        <nav id="staffNav"></nav>
+        <button class="alert-toggle hidden" id="soundToggle" type="button" aria-pressed="true" title="Alerte sonore des nouvelles commandes"></button>
+        <span class="user-chip">
+          <span class="rt-indicator"><span class="rt-dot" id="rtDot"></span></span>
+          <span id="roleLabel"></span>
+        </span>
+        <nav><button id="logoutBtn">Déconnexion</button></nav>
+      </div>
+    </header>
+
+    <!-- ALERTE NOUVELLE COMMANDE (visuelle, en complément du son) -->
+    <div id="orderAlert" class="order-alert hidden" role="alert" aria-live="assertive">
+      <div class="container order-alert-inner">
+        <span class="oa-icon" aria-hidden="true"><svg viewBox="0 0 24 24"><path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9M10.3 21a1.94 1.94 0 0 0 3.4 0"/></svg></span>
+        <div class="oa-text"><strong id="orderAlertTitle">Nouvelle commande</strong><span id="orderAlertSub"></span></div>
+        <button class="btn small" id="orderAlertShow" type="button">Voir</button>
+        <button class="btn small secondary" id="orderAlertMute" type="button">Arrêter l'alerte</button>
+      </div>
+    </div>
+    <div id="audioHint" class="audio-hint hidden">
+      <div class="container">Cliquez n'importe où sur la page pour activer l'alerte sonore des nouvelles commandes.
+        <button class="link-btn" id="notifPermBtn" type="button">Activer aussi les notifications du navigateur</button></div>
+    </div>
+
+    <main class="container" style="padding-bottom:40px">
+      <!-- VUE COMMANDES -->
+      <section id="viewOrders" class="hidden">
+        <div class="between flex" style="margin:22px 0 10px">
+          <h2 class="section-title" style="margin:0">Commandes</h2>
+          <div class="flex">
+            <select id="statusFilter" class="field" aria-label="Filtrer les commandes par statut" style="margin:0;min-width:180px">
+              <option value="">Tous les statuts</option>
+              <option value="pending">En attente</option>
+              <option value="accepted">Acceptées</option>
+              <option value="preparing">En préparation</option>
+              <option value="delivering">En livraison</option>
+              <option value="delivered">Livrées</option>
+              <option value="ready">Prêtes à retirer</option>
+              <option value="picked_up">Retirées</option>
+              <option value="no_show">Non récupérées</option>
+              <option value="cancelled">Annulées</option>
+            </select>
+            <select id="modeFilter" class="field" aria-label="Filtrer par mode de réception" style="margin:0;min-width:160px">
+              <option value="">Livraison + retrait</option>
+              <option value="delivery">Livraisons</option>
+              <option value="pickup">Retraits sur place</option>
+            </select>
+            <button class="btn secondary small icon-btn" id="refreshOrders" aria-label="Actualiser les commandes" title="Actualiser"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 0 0-14.7-3L3 11M3 5v6h6M4 13a8 8 0 0 0 14.7 3L21 13M21 19v-6h-6"/></svg></button>
+          </div>
+        </div>
+        <div id="statBar" class="stat-row"></div>
+        <div id="ordersContainer"></div>
+      </section>
+
+      <!-- VUE TABLEAU DE BORD -->
+      <section id="viewDash" class="hidden">
+        <div class="between flex dash-head" style="margin:22px 0 14px">
+          <h2 class="section-title" style="margin:0">Tableau de bord</h2>
+          <div class="date-nav">
+            <button class="btn secondary small" id="dayPrev" type="button" aria-label="Jour précédent">‹</button>
+            <input type="date" id="dashDate" class="field" aria-label="Journée consultée" />
+            <button class="btn secondary small" id="dayNext" type="button" aria-label="Jour suivant">›</button>
+            <button class="btn secondary small" id="dayToday" type="button">Aujourd'hui</button>
+          </div>
+        </div>
+        <p class="muted" id="dashDayLabel" style="margin:-6px 0 14px"></p>
+        <div id="dashStats" class="stat-row"></div>
+        <div class="dash-grid">
+          <div class="card" style="padding:18px">
+            <h3 style="margin-top:0">7 derniers jours</h3>
+            <div id="dashHistory"></div>
+          </div>
+          <div class="card" style="padding:18px">
+            <h3 style="margin-top:0">Produits les plus commandés</h3>
+            <div id="dashDetail"></div>
+          </div>
+        </div>
+      </section>
+
+      <!-- VUE CATALOGUE (développeur / admin) -->
+      <section id="viewCatalog" class="hidden">
+        <div class="between flex" style="margin:22px 0 10px">
+          <h2 class="section-title" style="margin:0">Gestion du catalogue</h2>
+          <button class="btn small" id="newProductBtn">+ Nouveau produit</button>
+        </div>
+        <div class="card" style="padding:16px;margin-bottom:18px">
+          <h3 style="margin-top:0">Catégories</h3>
+          <div id="catManage" class="flex" style="flex-wrap:wrap"></div>
+          <div class="flex mt">
+            <input id="newCatName" class="field" style="margin:0" placeholder="Nouvelle catégorie" />
+            <button class="btn secondary small" id="addCatBtn">Ajouter</button>
+          </div>
+        </div>
+        <div class="table-wrap card">
+          <table class="data">
+            <thead><tr><th>Produit</th><th>Catégorie</th><th>Prix</th><th>Dispo.</th><th>Accueil</th><th></th></tr></thead>
+            <tbody id="productRows"></tbody>
+          </table>
+        </div>
+      </section>
+
+      <!-- VUE PERSONNALISATION (admin / développeur) -->
+      <section id="viewBrand" class="hidden">
+        <div class="between flex" style="margin:22px 0 10px">
+          <h2 class="section-title" style="margin:0">Personnalisation du restaurant</h2>
+          <a class="btn secondary small" href="/" target="_blank" rel="noopener">Voir l'espace client ↗</a>
+        </div>
+        <form id="brandForm" class="brand-form">
+          <div class="card brand-card">
+            <h3>Identité</h3>
+            <div class="field"><label for="bName">Nom du restaurant</label><input id="bName" name="name" required /></div>
+            <div class="field"><label for="bTagline">Slogan</label><input id="bTagline" name="tagline" /></div>
+            <div class="field">
+              <label>Logo</label>
+              <div class="logo-edit">
+                <div class="logo-preview" id="logoPreview"></div>
+                <div class="grow">
+                  <input id="bLogoFile" type="file" accept="image/png,image/jpeg,image/webp,image/svg+xml" aria-label="Importer un logo" />
+                  <input id="bLogo" name="logo_url" placeholder="… ou adresse https:// d'une image" class="mt-s" aria-label="Adresse du logo" />
+                  <button class="link-btn small-link" type="button" id="logoClear">Retirer le logo</button>
+                </div>
+              </div>
+            </div>
+            <div class="field"><label for="bColor">Couleur principale</label>
+              <div class="flex"><input id="bColor" name="primary_color" type="color" style="width:64px;padding:4px;height:42px" /><span class="muted" id="bColorHex"></span></div>
+            </div>
+          </div>
+
+          <div class="card brand-card">
+            <h3>Page d'accueil</h3>
+            <div class="field"><label for="bEyebrow">Sur-titre</label><input id="bEyebrow" name="hero_eyebrow" /></div>
+            <div class="field"><label for="bHeroTitle">Titre principal</label><input id="bHeroTitle" name="hero_title" /></div>
+            <div class="field"><label for="bHeroAccent">Suite du titre (en italique)</label><input id="bHeroAccent" name="hero_accent" /></div>
+            <div class="field"><label for="bHeroSub">Texte d'introduction</label><textarea id="bHeroSub" name="hero_subtitle"></textarea></div>
+            <div class="field"><label for="bHeroImg">Photo d'ambiance (adresse https://)</label><input id="bHeroImg" name="hero_image_url" /></div>
+            <p class="muted" style="font-size:.84rem;margin:0">Les catégories, les plats et leurs photos se gèrent dans l'onglet « Catalogue ». Cochez « Accueil » sur un produit pour l'afficher dans « Nos incontournables ».</p>
+          </div>
+
+          <div class="card brand-card">
+            <h3>Informations pratiques</h3>
+            <div class="field"><label for="bPhone">Téléphone</label><input id="bPhone" name="phone" /></div>
+            <div class="field"><label for="bAddress">Adresse du restaurant</label><input id="bAddress" name="address" /></div>
+            <div class="field"><label for="bHours">Horaires</label><input id="bHours" name="hours" /></div>
+          </div>
+
+          <div class="card brand-card">
+            <h3>Livraison et retrait sur place</h3>
+            <label class="check-line"><input type="checkbox" id="bDelivery" name="delivery_enabled" /> Proposer la livraison</label>
+            <label class="check-line"><input type="checkbox" id="bPickup" name="pickup_enabled" /> Proposer le retrait sur place</label>
+            <div class="field mt"><label for="bPickupInstr">Consignes de retrait (affichées au client)</label><textarea id="bPickupInstr" name="pickup_instructions"></textarea></div>
+            <div class="field"><label for="bHold">Délai de conservation d'une commande prête (minutes)</label><input id="bHold" name="pickup_hold_minutes" type="number" min="0" max="1440" /></div>
+            <div class="field"><label for="bNoShow">Règle en cas de commande non récupérée</label><textarea id="bNoShow" name="no_show_policy"></textarea></div>
+            <p class="muted" style="font-size:.84rem;margin:0">À définir avec chaque restaurant. Une commande « prête » non récupérée peut être clôturée avec le statut « Non récupérée » par le gérant.</p>
+          </div>
+
+          <div class="brand-actions"><button class="btn" type="submit" id="brandSave">Enregistrer la personnalisation</button></div>
+        </form>
+      </section>
+    </main>
+  </div>
+
+  <!-- MODALE PRODUIT -->
+  <div id="drawerOverlay" class="drawer-overlay" aria-hidden="true"></div>
+  <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="drawerTitle">
+    <header><h2 id="drawerTitle">Produit</h2><button class="close-x" id="drawerClose" aria-label="Fermer">&times;</button></header>
+    <div class="content" id="drawerContent"></div>
+    <footer id="drawerFooter"></footer>
+  </aside>
+
+  <div id="toasts"></div>
+
+  <script src="/js/common.js"></script>
+  <script src="/js/staff.js"></script>
+</body>
+</html>
