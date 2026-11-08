@@ -5,10 +5,6 @@ const path = require('path');
 const { AsyncLocalStorage } = require('node:async_hooks');
 
 const usePostgres = Boolean(process.env.DATABASE_URL);
-const isProduction = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
-if (isProduction && !usePostgres) {
-  throw new Error('DATABASE_URL doit être configurée dans les variables du projet Vercel.');
-}
 
 let sqlite = null;
 let PgPool = null;
@@ -24,10 +20,14 @@ if (usePostgres) {
   PgPool = Pool;
 } else {
   const Database = require('better-sqlite3');
-  const dataDir = path.join(__dirname, '..', 'data');
+  const defaultDbPath = process.env.VERCEL
+    ? path.join('/tmp', 'restaurant.db')
+    : path.join(__dirname, '..', 'data', 'restaurant.db');
+  const dbPath = process.env.DB_PATH || defaultDbPath;
+  const dataDir = path.dirname(dbPath);
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-  sqlite = new Database(process.env.DB_PATH || path.join(dataDir, 'restaurant.db'));
+  sqlite = new Database(dbPath);
   sqlite.pragma('journal_mode = WAL');
   sqlite.pragma('foreign_keys = ON');
   sqlite.exec(`

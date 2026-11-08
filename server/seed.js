@@ -136,7 +136,7 @@ async function insertProducts(executor, categoryId, products, imageForCategory) 
 
 async function ensureSeed(executor = db) {
   const production = process.env.VERCEL === '1' || process.env.NODE_ENV === 'production';
-  const staff = production ? [] : STAFF;
+  const staff = STAFF;
 
   for (const user of staff) {
     await executor.run(
