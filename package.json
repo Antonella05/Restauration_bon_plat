@@ -4,6 +4,9 @@
   "description": "MVP web - Gestion des commandes et livraisons pour restaurant",
   "main": "server/index.js",
   "type": "commonjs",
+  "engines": {
+    "node": "22.x"
+  },
   "scripts": {
     "build": "echo \"No build required\"",
     "test": "node --test",
@@ -15,11 +18,13 @@
   "dependencies": {
     "@neondatabase/serverless": "^1.2.0",
     "bcryptjs": "^2.4.3",
-    "better-sqlite3": "^11.3.0",
     "cookie-parser": "^1.4.6",
     "express": "^4.22.3",
     "jsonwebtoken": "^9.0.2",
     "ws": "^8.22.1"
+  },
+  "optionalDependencies": {
+    "better-sqlite3": "^11.3.0"
   },
   "overrides": {
     "qs": "^6.16.1"

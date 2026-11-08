@@ -19,7 +19,13 @@ if (usePostgres) {
   neonConfig.webSocketConstructor = WebSocket;
   PgPool = Pool;
 } else {
-  const Database = require('better-sqlite3');
+  let Database = null;
+  try {
+    Database = require('better-sqlite3');
+  } catch (err) {
+    Database = null;
+  }
+
   const defaultDbPath = process.env.VERCEL
     ? path.join('/tmp', 'restaurant.db')
     : path.join(__dirname, '..', 'data', 'restaurant.db');
@@ -27,10 +33,17 @@ if (usePostgres) {
   const dataDir = path.dirname(dbPath);
   if (!fs.existsSync(dataDir)) fs.mkdirSync(dataDir, { recursive: true });
 
-  sqlite = new Database(dbPath);
-  sqlite.pragma('journal_mode = WAL');
-  sqlite.pragma('foreign_keys = ON');
-  sqlite.exec(`
+  if (!Database) {
+    if (process.env.VERCEL) {
+      console.warn('better-sqlite3 non disponible sur Vercel. Configurez DATABASE_URL (Neon PostgreSQL) pour activer l\'API.');
+    } else {
+      throw new Error('better-sqlite3 est requis en local. Exécutez "npm install" pour l\'installer.');
+    }
+  } else {
+    sqlite = new Database(dbPath);
+    sqlite.pragma('journal_mode = WAL');
+    sqlite.pragma('foreign_keys = ON');
+    sqlite.exec(`
     CREATE TABLE IF NOT EXISTS users (
       id INTEGER PRIMARY KEY AUTOINCREMENT, role TEXT NOT NULL, name TEXT NOT NULL,
       phone TEXT, username TEXT UNIQUE, password_hash TEXT,
@@ -104,6 +117,7 @@ if (usePostgres) {
   addColumn('orders', 'completed_at', 'TEXT');
   addColumn('orders', 'modified_at', 'TEXT');
   addColumn('orders', 'client_ack', 'INTEGER NOT NULL DEFAULT 1');
+  }
 }
 
 function currentPool() {
@@ -132,6 +146,9 @@ function postgresSql(statement) {
 }
 
 function sqliteQuery(statement, params) {
+  if (!sqlite) {
+    throw new Error('Base de données SQLite non disponible. Sur Vercel, configurez DATABASE_URL (Neon PostgreSQL).');
+  }
   const result = sqlite.prepare(statement);
   if (/^\s*(SELECT|PRAGMA|WITH)\b/i.test(statement)) {
     const rows = result.all(...params);
