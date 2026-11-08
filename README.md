@@ -53,9 +53,9 @@ sont créés automatiquement au premier appel à l'API.
 
 ## Déploiement Vercel
 
-Le dépôt contient `vercel.json`, un build statique et une fonction Express pour l'API.
-Sur Vercel, les données sont stockées dans Neon PostgreSQL ; elles ne sont pas écrites
-dans le système de fichiers temporaire de la fonction.
+Le dépôt contient `vercel.json` configuré pour servir directement le dossier `public/`
+et une fonction Express pour l'API. Sur Vercel, les données sont stockées dans Neon PostgreSQL ;
+elles ne sont pas écrites dans le système de fichiers temporaire de la fonction.
 La connexion Neon est ouverte pour chaque requête API puis fermée avec sa réponse,
 conformément au fonctionnement des connexions WebSocket en environnement serverless.
 
@@ -64,8 +64,8 @@ conformément au fonctionnement des connexions WebSocket en environnement server
 2. Dans Vercel, ouvre le projet **Restauration → Settings → Build and Deployment** :
    - **Root Directory** : laisse la racine du dépôt (`./`, valeur par défaut).
    - **Framework Preset** : `Other`.
-   - **Build Command** : `npm run build`.
-   - **Output Directory** : `dist`.
+   - **Build Command** : désactivé / vide (ou `npm run build`).
+   - **Output Directory** : `public` (ou laisser vide, géré automatiquement par `vercel.json`).
 3. Dans **Settings → Environment Variables**, ajoute les variables suivantes pour
    **Production** (et Preview si tu souhaites utiliser les prévisualisations) :
    - `DATABASE_URL` : URL pooled Neon.
