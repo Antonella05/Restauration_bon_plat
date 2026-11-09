@@ -12,29 +12,26 @@ uniquement**, avec **tous les acteurs** connectables et une **interface dédiée
 
 | Acteur | Connexion | Interface |
 |---|---|---|
-| **Client** | Nom + téléphone (simplifié, conforme MVP) | Accueil, menu dynamique par catégories, fiches produits, panier + commentaire, formulaire de commande, choix du mode de paiement (Cash / Mobile Money affiché), **suivi de commande en temps réel** |
-| **Gestionnaire de commandes / Call center** | Identifiant + mot de passe | Réception des commandes en **temps réel** (notification), détail, boutons **Accepter / Annuler**, compteurs par statut |
-| **Gérant** | Identifiant + mot de passe | Liste des commandes + **mise à jour du statut** (en attente → préparation → livraison → livrée), tableau de bord (compteurs, recettes livrées, produits les plus commandés) |
-| **Administrateur** | Identifiant + mot de passe | Accès complet : commandes, tableau de bord **et** gestion du catalogue |
-| **Développeur** | Identifiant + mot de passe | **Gestion du catalogue produits** (catégories + produits : ajout / modification / suppression / disponibilité) |
+| **Client** | Nom + téléphone (simplifié, conforme MVP) | Accueil, menu dynamique par catégories, fiches produits, panier + commentaire, formulaire de commande, **billetterie & événements (recherche, filtres restaurant/club/hôtel, achat de billets, e-tickets avec QR code)**, **suivi de commande en temps réel** |
+| **Gestionnaire de commandes / Call center** | Identifiant + mot de passe | Réception des commandes en **temps réel** (notification), détail, boutons **Accepter / Annuler**, compteurs par statut, **contrôle d'accès & validation des billets (Check-in scanner)** |
+| **Gérant** | Identifiant + mot de passe | Liste des commandes + **mise à jour du statut** (en attente → préparation → livraison → livrée), tableau de bord (compteurs, recettes livrées, produits les plus commandés), **gestion des événements et statistiques billetterie** |
+| **Administrateur** | Identifiant + mot de passe | Accès complet : commandes, tableau de bord, catalogue produits, **création/modification des événements et types de billets, suivi des ventes** |
+| **Développeur** | Identifiant + mot de passe | **Gestion du catalogue produits et programmation des événements/tarifs** |
 
-## Périmètre couvert (MVP du cahier des charges)
+## Périmètre couvert
 
-Côté client : page d'accueil, authentification simplifiée, menu dynamique chargé depuis
-la base, fiches produits, panier, formulaire de commande, suivi de commande temps réel,
-affichage du mode de paiement (Cash / Mobile Money — enregistré en « paiement à la
-livraison », **sans** transaction automatisée, comme prévu pour le MVP).
+Côté client :
+- **Restauration** : page d'accueil, authentification simplifiée, menu dynamique, fiches produits, panier, formulaire de commande, suivi temps réel.
+- **Événements & Billetterie** : recherche d'événements, filtres par type d'ambiance (🍽️ Restaurant, 🪩 Boîte de nuit & Clubbing, 🏨 Hôtel & Villa), parcours en 5 étapes, achat de billets avec formules multiples (Standard, VIP, Table Club, Package Nuitée Hôtel), génération automatique du **e-ticket avec QR Code vectoriel**, consultation dans l'espace « Mes billets » et impression.
 
-Côté back-office : liste des commandes, mise à jour du statut.
-
-Côté call center : notification périodique de nouvelle commande,
-consultation et validation (Accepter / Annuler), suivi temps réel partagé entre tous les rôles.
-
-Côté développeur : mise à jour du catalogue produits.
-
-> Les fonctionnalités marquées « Phase 2 » dans le cahier des charges (paiement Mobile
-> Money réel, billetterie/réservation, offres spéciales, avis, publication sur les stores…)
-> ne sont volontairement pas incluses dans ce MVP.
+Côté back-office staff :
+- Gestion et suivi des commandes en temps réel.
+- **Module Billetterie & Événements** :
+  - Création et programmation d'événements multi-espaces (Restaurant, Boîte de nuit, Hôtel, Lounge).
+  - Gestion des formules de billets (prix, quotas de places, descriptions).
+  - **Scanner / Contrôle d'accès à l'entrée** : saisie ou scan du code billet, détection instantanée de validité, protection contre les doubles entrées (alerte si déjà composté).
+  - Registre complet des billets vendus avec filtres par événement et statut.
+  - Statistiques en temps réel : nombre de billets vendus, recettes générées, taux de compostage.
 
 ## Démarrage
 

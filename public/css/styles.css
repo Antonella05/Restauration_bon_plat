@@ -859,3 +859,605 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   outline-offset: 3px;
 }
 .how-section :focus-visible, .site-footer :focus-visible, .topbar :focus-visible { outline-color: var(--ochre); }
+
+/* ============================================================
+   ÉVÉNEMENTS & BILLETTERIE (Restaurant, Boîte de Nuit, Hôtel)
+   ============================================================ */
+
+.events-section {
+  padding: 60px 0 80px;
+  background: linear-gradient(180deg, rgba(234, 223, 200, 0.4) 0%, rgba(243, 235, 220, 0.9) 100%);
+  border-top: 1px solid var(--line);
+  border-bottom: 1px solid var(--line);
+  margin: 60px 0;
+}
+
+/* Barre de recherche d'événements (inspirée de l'interface fournie) */
+.events-search-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  max-width: 680px;
+  margin: 24px auto 30px;
+  background: #ffffff;
+  padding: 6px 8px 6px 20px;
+  border-radius: 999px;
+  border: 1px solid #d1d5db;
+  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+}
+
+.events-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  font-size: 1.05rem;
+  color: #1f2937;
+  outline: none;
+  padding: 8px 0;
+}
+
+.events-search-bar input::placeholder {
+  color: #9ca3af;
+}
+
+.events-search-bar .btn-search {
+  background: transparent;
+  color: #15803d;
+  border: 1.5px solid #16a34a;
+  padding: 10px 24px;
+  border-radius: 999px;
+  font-weight: 600;
+  font-size: 0.98rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.events-search-bar .btn-search:hover {
+  background: #16a34a;
+  color: #ffffff;
+  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+}
+
+/* Filtres par type de lieu (Restaurant, Boîte de nuit, Hôtel) */
+.venue-filters {
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-bottom: 36px;
+}
+
+.venue-filter-btn {
+  background: var(--card);
+  border: 1px solid var(--line-strong);
+  color: var(--ink);
+  padding: 8px 18px;
+  border-radius: 20px;
+  font-size: 0.9rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.venue-filter-btn:hover {
+  border-color: var(--ink);
+}
+
+.venue-filter-btn.active {
+  background: var(--ink);
+  color: #ffffff;
+  border-color: var(--ink);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+}
+
+/* Les 5 étapes du parcours (Inspiré fidèlement de l'image 2) */
+.events-steps-card {
+  background: #ffffff;
+  border-radius: 20px;
+  padding: 32px 28px;
+  max-width: 620px;
+  margin: 0 auto 50px;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.events-steps-title {
+  text-align: center;
+  font-family: var(--sans);
+  font-size: 1.15rem;
+  font-weight: 700;
+  color: #111827;
+  margin: 0 0 22px;
+  letter-spacing: -0.01em;
+}
+
+.steps-list {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+.step-card-item {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  padding: 14px 22px;
+  background: #fbfdfb;
+  border: 1.5px solid #eef2ef;
+  border-radius: 16px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.step-card-item:hover {
+  transform: translateY(-1px);
+  border-color: #a7f3d0;
+}
+
+.step-num {
+  font-family: var(--sans);
+  font-weight: 800;
+  font-size: 1.45rem;
+  color: #fbbf24;
+  letter-spacing: -0.04em;
+  min-width: 34px;
+}
+
+.step-icon-bubble {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: #059669;
+  color: #ffffff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.25rem;
+  flex-shrink: 0;
+  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25);
+}
+
+.step-text-wrap {
+  flex: 1;
+}
+
+.step-text-title {
+  font-family: var(--sans);
+  font-size: 1.05rem;
+  font-weight: 700;
+  color: #1f2937;
+  margin: 0;
+}
+
+.step-chevron {
+  color: #4b5563;
+  font-size: 1.1rem;
+  opacity: 0.6;
+}
+
+/* Grille des événements */
+.events-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+  gap: 32px;
+  margin-top: 24px;
+}
+
+/* Carte Événement Thème Sombre & Émeraude (fidèle à l'image 1) */
+.event-card-dark {
+  background: radial-gradient(120% 120% at 50% 10%, #15221c 0%, #0a100d 100%);
+  border: 1px solid rgba(16, 185, 129, 0.35);
+  border-radius: 28px;
+  overflow: hidden;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  position: relative;
+  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+}
+
+.event-card-dark:hover {
+  transform: translateY(-5px);
+  border-color: #10b981;
+  box-shadow: 0 25px 50px rgba(16, 185, 129, 0.2);
+}
+
+.event-card-image-wrap {
+  position: relative;
+  width: 100%;
+  height: 220px;
+  overflow: hidden;
+}
+
+.event-card-image-wrap img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: transform 0.4s ease;
+}
+
+.event-card-dark:hover .event-card-image-wrap img {
+  transform: scale(1.05);
+}
+
+.event-card-overlay {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(10, 16, 13, 0.95) 100%);
+}
+
+.event-badge-glow {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  background: rgba(16, 185, 129, 0.9);
+  color: #032b1a;
+  font-size: 0.82rem;
+  font-weight: 800;
+  text-transform: uppercase;
+  padding: 6px 14px;
+  border-radius: 999px;
+  letter-spacing: 0.05em;
+  box-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+}
+
+.event-venue-type-tag {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  background: rgba(0, 0, 0, 0.7);
+  backdrop-filter: blur(8px);
+  color: #f3f4f6;
+  font-size: 0.8rem;
+  font-weight: 600;
+  padding: 6px 14px;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
+}
+
+.event-card-body {
+  padding: 24px 26px;
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+}
+
+.event-brands-row {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 12px;
+  font-size: 0.76rem;
+  font-weight: 700;
+  color: #94a3b8;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+
+.event-brands-row span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.event-card-title {
+  font-family: var(--sans);
+  font-size: 1.35rem;
+  font-weight: 800;
+  line-height: 1.25;
+  color: #f8fafc;
+  margin: 0 0 8px;
+  letter-spacing: -0.01em;
+}
+
+.event-card-subtitle {
+  font-size: 0.92rem;
+  color: #a7f3d0;
+  font-weight: 500;
+  margin: 0 0 16px;
+}
+
+.event-meta-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 18px;
+  font-size: 0.95rem;
+  color: #e2e8f0;
+}
+
+.event-meta-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.event-meta-icon {
+  font-size: 1.1rem;
+  width: 22px;
+  text-align: center;
+  color: #34d399;
+}
+
+.event-card-desc {
+  font-size: 0.9rem;
+  color: #94a3b8;
+  line-height: 1.5;
+  margin: 0 0 20px;
+  flex: 1;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.event-card-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding-top: 18px;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  margin-top: auto;
+}
+
+.event-price-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.event-price-label {
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  color: #94a3b8;
+  letter-spacing: 0.05em;
+}
+
+.event-price-amount {
+  font-family: var(--mono);
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: #34d399;
+}
+
+.btn-book-ticket {
+  background: #059669;
+  color: #ffffff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 999px;
+  font-weight: 700;
+  font-size: 0.98rem;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+}
+
+.btn-book-ticket:hover {
+  background: #10b981;
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}
+
+.btn-book-ticket:disabled {
+  background: #475569;
+  cursor: not-allowed;
+  box-shadow: none;
+  transform: none;
+}
+
+/* Modale de Réservation de Ticket */
+.ticket-type-option {
+  border: 1.5px solid var(--line);
+  background: var(--surface);
+  border-radius: 12px;
+  padding: 14px 16px;
+  margin-bottom: 10px;
+  cursor: pointer;
+  transition: border-color 0.2s, background 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.ticket-type-option:hover {
+  border-color: var(--ink);
+}
+
+.ticket-type-option.selected {
+  border-color: #059669;
+  background: #ecfdf5;
+}
+
+.ticket-type-option input[type="radio"] {
+  accent-color: #059669;
+}
+
+/* Carte E-Billet Électronique */
+.e-ticket-card {
+  background: #ffffff;
+  border-radius: 20px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
+  overflow: hidden;
+  max-width: 480px;
+  margin: 0 auto 24px;
+  position: relative;
+}
+
+.e-ticket-header {
+  background: #0f172a;
+  color: #ffffff;
+  padding: 22px 24px;
+  position: relative;
+}
+
+.e-ticket-brand {
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: #34d399;
+  font-weight: 700;
+  margin-bottom: 6px;
+}
+
+.e-ticket-title {
+  font-family: var(--sans);
+  font-size: 1.25rem;
+  font-weight: 800;
+  color: #ffffff;
+  margin: 0 0 4px;
+}
+
+.e-ticket-venue {
+  font-size: 0.88rem;
+  color: #94a3b8;
+}
+
+.e-ticket-tear {
+  position: relative;
+  height: 24px;
+  background: #ffffff;
+  border-top: 2px dashed #cbd5e1;
+}
+
+.e-ticket-tear::before,
+.e-ticket-tear::after {
+  content: "";
+  position: absolute;
+  top: -14px;
+  width: 24px;
+  height: 24px;
+  background: var(--bg);
+  border-radius: 50%;
+}
+.e-ticket-tear::before { left: -12px; }
+.e-ticket-tear::after { right: -12px; }
+
+.e-ticket-body {
+  padding: 10px 24px 24px;
+  text-align: center;
+}
+
+.e-ticket-qr-wrap {
+  display: inline-block;
+  padding: 14px;
+  background: #ffffff;
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
+  margin-bottom: 14px;
+}
+
+.e-ticket-code {
+  font-family: var(--mono);
+  font-size: 1.3rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  color: #0f172a;
+  background: #f1f5f9;
+  padding: 6px 14px;
+  border-radius: 8px;
+  display: inline-block;
+  margin-bottom: 14px;
+}
+
+.e-ticket-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+  text-align: left;
+  background: #f8fafc;
+  padding: 14px 18px;
+  border-radius: 12px;
+  font-size: 0.88rem;
+  margin-bottom: 16px;
+}
+
+.e-ticket-grid div dt {
+  color: #64748b;
+  font-size: 0.74rem;
+  text-transform: uppercase;
+  margin-bottom: 2px;
+}
+
+.e-ticket-grid div dd {
+  margin: 0;
+  font-weight: 600;
+  color: #0f172a;
+}
+
+.e-ticket-status-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-transform: uppercase;
+}
+
+.e-ticket-status-valid {
+  background: #dcfce7;
+  color: #15803d;
+}
+
+.e-ticket-status-used {
+  background: #fee2e2;
+  color: #b91c1c;
+}
+
+/* Backoffice Staff - Billetterie & Contrôle */
+.staff-scan-box {
+  background: #ffffff;
+  border: 2px dashed #059669;
+  border-radius: 16px;
+  padding: 24px;
+  text-align: center;
+  margin-bottom: 28px;
+}
+
+.staff-scan-input {
+  max-width: 420px;
+  margin: 12px auto;
+  font-family: var(--mono);
+  font-size: 1.25rem;
+  text-transform: uppercase;
+  text-align: center;
+  letter-spacing: 0.06em;
+}
+
+.scan-alert-success {
+  background: #dcfce7;
+  border: 1px solid #86efac;
+  color: #14532d;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+.scan-alert-error {
+  background: #fee2e2;
+  border: 1px solid #fca5a5;
+  color: #7f1d1d;
+  padding: 16px 20px;
+  border-radius: 12px;
+  margin-top: 16px;
+  font-weight: 600;
+}
+
+@media print {
+  body * { visibility: hidden; }
+  .e-ticket-card, .e-ticket-card * { visibility: visible; }
+  .e-ticket-card { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: 1px solid #000; }
+}
+

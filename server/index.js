@@ -10,6 +10,8 @@ const menuRoutes = require('./routes/menu');
 const { router: orderRoutes } = require('./routes/orders');
 const productRoutes = require('./routes/products');
 const settingsRoutes = require('./routes/settings');
+const eventRoutes = require('./routes/events');
+const ticketRoutes = require('./routes/tickets');
 const realtime = require('./realtime');
 const { extractToken, verifyToken } = require('./auth');
 
@@ -35,6 +37,9 @@ app.use('/api/menu', menuRoutes);
 app.use('/api/orders', orderRoutes);
 app.use('/api/products', productRoutes);
 app.use('/api/settings', settingsRoutes);
+app.use('/api/evenements', eventRoutes);
+app.use('/api/agenda', eventRoutes);
+app.use('/api/tickets', ticketRoutes);
 
 app.get('/api/events', asyncHandler(async (req, res) => {
   const token = extractToken(req);

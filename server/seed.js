@@ -112,6 +112,66 @@ const PRODUCT_IMAGE = {
   'Jus de bissap':      U('1595981267035-7b04ca84a82d'),
 };
 
+const EVENTS = [
+  {
+    title: 'GUELEDE XPERIENCE × NATIVE HOTEL — LE CERCLE',
+    subtitle: 'Séance Principale · Inauguration du nouvel espace Le Cercle',
+    venue_type: 'hotel',
+    venue_name: 'NATIVE HOTEL Ouidah (Villa RCC)',
+    location: 'Ouidah, Bénin',
+    event_date: '2026-10-31',
+    event_time: '19:00',
+    badge: '★ SÉANCE PRINCIPALE',
+    organizer: 'Guelede Xperience & Native Hotels & Rosyne Club',
+    image_url: 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=1200&q=80',
+    description: "À l'occasion de l'inauguration du nouveau club et lounge Le Cercle au sein de Native Hotel. Une immersion festive d'exception avec DJ sets internationaux, performance artistique de danses Guèlèdè, cocktails signature, service de restauration gastronomique et ambiance clubbing jusqu'à l'aube.",
+    featured: 1,
+    tickets: [
+      { name: 'Pass Entrée Standard', price: 5000, quantity_available: 150, description: 'Accès soirée + 1 cocktail de bienvenue inclus' },
+      { name: 'Pass VIP Privilège', price: 15000, quantity_available: 50, description: 'Accès espace Carré VIP, service dédié, dégustation tapas & coupe de champagne' },
+      { name: 'Table Rosyne Club (5 pers.)', price: 60000, quantity_available: 12, description: 'Salon privatif réservé pour 5 personnes + 1 bouteille prestige au choix + softs illimités' },
+      { name: 'Package Expérience Nuitée Hôtel + Soirée', price: 120000, quantity_available: 8, description: 'Chambre Deluxe Native Hotel (1 nuitée pour 2 personnes) + 2 Pass VIP + Petit-déjeuner buffet au restaurant' },
+    ]
+  },
+  {
+    title: 'Afrobeat & Electro Night — Rosyne Club',
+    subtitle: 'La grande nuit des rythmes urbains, amapiano et deep house',
+    venue_type: 'nightclub',
+    venue_name: 'Rosyne Club — Espace Nuit & Discothèque',
+    location: 'Rosyne Club, Ouidah / Cotonou',
+    event_date: '2026-11-14',
+    event_time: '22:30',
+    badge: 'CLUBBING NIGHT',
+    organizer: 'Rosyne Club & Guests',
+    image_url: 'https://images.unsplash.com/photo-1545128485-c400e7702796?auto=format&fit=crop&w=1200&q=80',
+    description: "La soirée clubbing de référence. Les meilleurs DJs de la sous-région aux platines, jeux de lumières immersifs, bar à cocktails premium et ambiance survoltée sur la piste de danse.",
+    featured: 1,
+    tickets: [
+      { name: 'Pass Clubbing Standard', price: 3000, quantity_available: 200, description: 'Entrée au club' },
+      { name: 'Pass VIP Lounge', price: 10000, quantity_available: 40, description: 'Accès mezzanine VIP + 2 consommations au choix' },
+      { name: 'Table VIP Carré Or (4 pers.)', price: 45000, quantity_available: 10, description: 'Table réservée avec 1 bouteille prestige au choix' },
+    ]
+  },
+  {
+    title: 'Brunch Acoustique & Dégustation Gastronomique',
+    subtitle: 'Buffet gourmand à volonté et concert live en plein air',
+    venue_type: 'restaurant',
+    venue_name: 'Le Bon Plat — Les Jardins & Terrasse',
+    location: 'Restaurant Le Bon Plat',
+    event_date: '2026-11-22',
+    event_time: '11:30',
+    badge: 'GASTRONOMIE & LIVE',
+    organizer: 'Le Bon Plat & Orchestre acoustique',
+    image_url: 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=1200&q=80',
+    description: "Une expérience dominicale unique : buffet géant aux saveurs d'ici et d'ailleurs, grillades minutes au feu de bois, bar à jus frais et douceurs, le tout rythmé par un concert acoustique live dans les jardins.",
+    featured: 1,
+    tickets: [
+      { name: 'Formule Brunch Adulte', price: 12500, quantity_available: 80, description: 'Buffet gourmand à volonté, grillades, boissons fraîches et concert live' },
+      { name: 'Formule Brunch Enfant (-12 ans)', price: 5000, quantity_available: 30, description: 'Buffet enfant, animations et ateliers gourmands' },
+    ]
+  }
+];
+
 async function insertCategory(executor, name, sortOrder) {
   const row = await executor.one(
     'INSERT INTO categories (name, sort_order) VALUES (?, ?) RETURNING id',
@@ -189,6 +249,23 @@ async function ensureSeed(executor = db) {
     await executor.run(
       "INSERT INTO settings (key, value) VALUES ('seed_drinks', '1') ON CONFLICT(key) DO NOTHING"
     );
+  }
+
+  const eventsCount = await executor.one('SELECT COUNT(*) AS c FROM events');
+  if (Number(eventsCount.c) === 0) {
+    for (const ev of EVENTS) {
+      const eventRow = await executor.one(`
+        INSERT INTO events (title, subtitle, venue_type, venue_name, location, event_date, event_time, description, image_url, badge, organizer, featured, status)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 'published') RETURNING id
+      `, ev.title, ev.subtitle, ev.venue_type, ev.venue_name, ev.location, ev.event_date, ev.event_time, ev.description, ev.image_url, ev.badge, ev.organizer, ev.featured);
+
+      for (const [tIndex, tkt] of ev.tickets.entries()) {
+        await executor.run(`
+          INSERT INTO ticket_types (event_id, name, description, price, quantity_available, quantity_sold, sort_order)
+          VALUES (?, ?, ?, ?, ?, 0, ?)
+        `, eventRow.id, tkt.name, tkt.description, tkt.price, tkt.quantity_available, tIndex);
+      }
+    }
   }
 }
 

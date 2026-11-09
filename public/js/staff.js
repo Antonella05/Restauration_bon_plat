@@ -8,10 +8,10 @@
 
   // Onglets autorisés par rôle.
   const TABS_BY_ROLE = {
-    callcenter: [{ id: 'orders', label: 'Commandes' }],
-    manager:    [{ id: 'orders', label: 'Commandes' }, { id: 'dash', label: 'Tableau de bord' }],
-    admin:      [{ id: 'orders', label: 'Commandes' }, { id: 'dash', label: 'Tableau de bord' }, { id: 'catalog', label: 'Catalogue' }, { id: 'brand', label: 'Personnalisation' }],
-    developer:  [{ id: 'catalog', label: 'Catalogue' }, { id: 'brand', label: 'Personnalisation' }],
+    callcenter: [{ id: 'orders', label: 'Commandes' }, { id: 'events', label: 'Événements & Billetterie' }],
+    manager:    [{ id: 'orders', label: 'Commandes' }, { id: 'dash', label: 'Tableau de bord' }, { id: 'events', label: 'Événements & Billetterie' }],
+    admin:      [{ id: 'orders', label: 'Commandes' }, { id: 'dash', label: 'Tableau de bord' }, { id: 'catalog', label: 'Catalogue' }, { id: 'events', label: 'Événements & Billetterie' }, { id: 'brand', label: 'Personnalisation' }],
+    developer:  [{ id: 'catalog', label: 'Catalogue' }, { id: 'events', label: 'Événements & Billetterie' }, { id: 'brand', label: 'Personnalisation' }],
   };
   // Rôles qui reçoivent les alertes de nouvelles commandes et peuvent modifier une commande.
   const ALERT_ROLES = ['callcenter', 'manager', 'admin'];
@@ -73,10 +73,12 @@
     $('#viewDash').classList.toggle('hidden', tab !== 'dash');
     $('#viewCatalog').classList.toggle('hidden', tab !== 'catalog');
     $('#viewBrand').classList.toggle('hidden', tab !== 'brand');
+    if ($('#viewEvents')) $('#viewEvents').classList.toggle('hidden', tab !== 'events');
     if (tab === 'orders') loadOrders();
     if (tab === 'dash') loadStats();
     if (tab === 'catalog') loadCatalog();
     if (tab === 'brand') loadBrandForm();
+    if (tab === 'events') loadStaffEvents();
   }
 
   /* =========================================================
@@ -836,6 +838,443 @@
     finally { $('#brandSave').disabled = false; }
   });
 
+  /* =========================================================
+     GESTION ÉVÉNEMENTS & BILLETTERIE (STAFF)
+     ========================================================= */
+  let staffEvents = [];
+  let staffTickets = [];
+  let billetterieStats = null;
+
+  async function loadStaffEvents() {
+    try {
+      const [statsData, eventsData, ticketsData] = await Promise.all([
+        api('/tickets/stats'),
+        api('/evenements?status='),
+        api('/tickets/list'),
+      ]);
+
+      billetterieStats = statsData;
+      staffEvents = eventsData.events || [];
+      staffTickets = ticketsData.tickets || [];
+
+      renderStaffEventsStats();
+      renderStaffEventsTable();
+      populateTicketEventFilter();
+      renderStaffTicketsTable();
+    } catch (err) {
+      toast('Erreur chargement billetterie : ' + err.message, 'error');
+    }
+  }
+
+  function renderStaffEventsStats() {
+    const box = $('#eventsStatsRow');
+    if (!box || !billetterieStats) return;
+    const tot = billetterieStats.total || {};
+
+    box.innerHTML = `
+      <div class="stat-card">
+        <div class="stat-num">${tot.tickets_sold || 0}</div>
+        <div class="stat-lbl">Billets vendus</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#059669">${fmtMoney(tot.revenue || 0)}</div>
+        <div class="stat-lbl">Recettes Billetterie</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num" style="color:#2563eb">${tot.checked_in || 0}</div>
+        <div class="stat-lbl">Entrées compostées</div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-num">${staffEvents.length}</div>
+        <div class="stat-lbl">Événements programmés</div>
+      </div>
+    `;
+  }
+
+  function renderStaffEventsTable() {
+    const tbody = $('#staffEventsTableBody');
+    if (!tbody) return;
+    if (!staffEvents.length) {
+      tbody.innerHTML = `<tr><td colspan="7" class="muted" style="text-align:center;padding:24px">Aucun événement créé pour le moment.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = staffEvents.map((ev) => {
+      const tickets = ev.ticket_types || [];
+      const totalCapacity = tickets.reduce((acc, t) => acc + (t.quantity_available || 0), 0);
+      const totalSold = tickets.reduce((acc, t) => acc + (t.quantity_sold || 0), 0);
+      const thumb = isSafeImage(ev.image_url) ? ev.image_url : 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=120&q=60';
+
+      return `
+        <tr>
+          <td style="width:60px">
+            <img src="${escapeHtml(thumb)}" alt="" style="width:52px;height:52px;border-radius:8px;object-fit:cover" />
+          </td>
+          <td>
+            <strong>${escapeHtml(ev.title)}</strong>
+            ${ev.subtitle ? `<div class="muted" style="font-size:.82rem">${escapeHtml(ev.subtitle)}</div>` : ''}
+            ${ev.badge ? `<span class="badge" style="background:#059669;color:#fff;font-size:.72rem;margin-top:2px">${escapeHtml(ev.badge)}</span>` : ''}
+          </td>
+          <td>
+            <span class="badge secondary" style="font-size:.78rem">${escapeHtml(ev.venue_type)}</span>
+            <div style="font-size:.85rem;margin-top:2px">${escapeHtml(ev.venue_name)}</div>
+            <div class="muted" style="font-size:.78rem">${escapeHtml(ev.location)}</div>
+          </td>
+          <td style="white-space:nowrap">
+            <div>📅 ${escapeHtml(ev.event_date)}</div>
+            <div class="muted">🕒 ${escapeHtml(ev.event_time)}</div>
+          </td>
+          <td>
+            <strong>${totalSold} / ${totalCapacity}</strong> places
+            <div class="muted" style="font-size:.78rem">${tickets.map((t) => `${t.name}: ${t.quantity_sold}/${t.quantity_available}`).join(' · ')}</div>
+          </td>
+          <td>
+            <span class="badge ${ev.status === 'published' ? 'st-delivered' : (ev.status === 'sold_out' ? 'st-delivering' : 'st-cancelled')}">
+              ${ev.status === 'published' ? 'Publié' : (ev.status === 'sold_out' ? 'Complet' : ev.status)}
+            </span>
+          </td>
+          <td style="white-space:nowrap">
+            <button class="btn small secondary" data-edit-ev="${ev.id}">Modifier</button>
+            <button class="btn small secondary danger" data-del-ev="${ev.id}" style="color:#b91c1c">Supprimer</button>
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $$('[data-edit-ev]').forEach((b) => b.addEventListener('click', () => {
+      const id = parseInt(b.dataset.editEv, 10);
+      const ev = staffEvents.find((x) => x.id === id);
+      if (ev) openEventDrawer(ev);
+    }));
+
+    $$('[data-del-ev]').forEach((b) => b.addEventListener('click', async () => {
+      const id = parseInt(b.dataset.delEv, 10);
+      if (!confirm('Supprimer cet événement et tous ses billets associés ?')) return;
+      try {
+        await api('/evenements/' + id, { method: 'DELETE' });
+        toast('Événement supprimé', 'success');
+        loadStaffEvents();
+      } catch (err) { toast(err.message, 'error'); }
+    }));
+  }
+
+  function populateTicketEventFilter() {
+    const sel = $('#ticketEventFilter');
+    if (!sel) return;
+    const currentVal = sel.value;
+    sel.innerHTML = '<option value="">Tous les événements</option>' +
+      staffEvents.map((ev) => `<option value="${ev.id}">${escapeHtml(ev.title)}</option>`).join('');
+    if (currentVal) sel.value = currentVal;
+  }
+
+  function renderStaffTicketsTable() {
+    const tbody = $('#staffTicketsTableBody');
+    if (!tbody) return;
+
+    const search = ($('#ticketSearchInput') ? $('#ticketSearchInput').value : '').trim().toLowerCase();
+    const eventFilter = $('#ticketEventFilter') ? $('#ticketEventFilter').value : '';
+    const statusFilter = $('#ticketStatusFilter') ? $('#ticketStatusFilter').value : '';
+
+    const filtered = staffTickets.filter((t) => {
+      if (eventFilter && String(t.event_id) !== String(eventFilter)) return false;
+      if (statusFilter && t.status !== statusFilter) return false;
+      if (search) {
+        const text = `${t.ticket_code} ${t.customer_name} ${t.customer_phone} ${t.event_title}`.toLowerCase();
+        if (!text.includes(search)) return false;
+      }
+      return true;
+    });
+
+    if (!filtered.length) {
+      tbody.innerHTML = `<tr><td colspan="9" class="muted" style="text-align:center;padding:20px">Aucun billet trouvé pour ces critères.</td></tr>`;
+      return;
+    }
+
+    tbody.innerHTML = filtered.map((t) => {
+      const isValid = t.status === 'valid';
+      const isUsed = t.status === 'used';
+
+      return `
+        <tr>
+          <td><strong style="font-family:var(--mono);color:#0f172a">${escapeHtml(t.ticket_code)}</strong></td>
+          <td>
+            <strong>${escapeHtml(t.event_title)}</strong>
+            <div class="muted" style="font-size:.78rem">📅 ${escapeHtml(t.event_date)}</div>
+          </td>
+          <td><strong>${escapeHtml(t.customer_name)}</strong></td>
+          <td><a href="tel:${escapeHtml(t.customer_phone)}">${escapeHtml(t.customer_phone)}</a></td>
+          <td>
+            <strong>${escapeHtml(t.ticket_type_name)}</strong>
+            <div>${t.quantity} place(s)</div>
+          </td>
+          <td style="font-family:var(--mono);font-weight:700">${fmtMoney(t.total_price)}</td>
+          <td><span class="badge secondary" style="font-size:.74rem">${escapeHtml(t.payment_method)}</span></td>
+          <td>
+            <span class="badge ${isValid ? 'st-delivered' : (isUsed ? 'secondary' : 'st-cancelled')}">
+              ${isValid ? 'Valide' : (isUsed ? `Composté (${fmtTime(t.used_at)})` : 'Annulé')}
+            </span>
+          </td>
+          <td>
+            ${isValid ? `<button class="btn small success" data-checkin-code="${t.ticket_code}" style="padding:4px 10px;font-size:.8rem">Composter</button>` : `<span class="muted" style="font-size:.82rem">Composté</span>`}
+          </td>
+        </tr>
+      `;
+    }).join('');
+
+    $$('[data-checkin-code]').forEach((b) => b.addEventListener('click', async () => {
+      const code = b.dataset.checkinCode;
+      await processCheckin(code);
+    }));
+  }
+
+  // Filtrage du registre des billets
+  if ($('#ticketSearchInput')) $('#ticketSearchInput').addEventListener('input', renderStaffTicketsTable);
+  if ($('#ticketEventFilter')) $('#ticketEventFilter').addEventListener('change', renderStaffTicketsTable);
+  if ($('#ticketStatusFilter')) $('#ticketStatusFilter').addEventListener('change', renderStaffTicketsTable);
+
+  // Soumission scanner check-in
+  const checkinForm = $('#checkinForm');
+  if (checkinForm) {
+    checkinForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const code = ($('#checkinCodeInput').value || '').trim();
+      if (!code) return;
+      await processCheckin(code);
+      $('#checkinCodeInput').value = '';
+    });
+  }
+
+  async function processCheckin(code) {
+    const area = $('#scanResultArea');
+    if (!area) return;
+
+    try {
+      const res = await api('/tickets/checkin', {
+        method: 'POST',
+        body: { code },
+      });
+
+      area.innerHTML = `
+        <div class="scan-alert-success">
+          <div style="font-size:1.3rem;margin-bottom:4px">✅ ACCÈS AUTORISÉ &amp; COMPOSTÉ</div>
+          <div>${escapeHtml(res.message)}</div>
+          <div style="margin-top:6px;font-size:.88rem;opacity:.9">Code: <strong>${escapeHtml(res.ticket.ticket_code)}</strong> · Événement: <strong>${escapeHtml(res.ticket.event_title)}</strong></div>
+        </div>
+      `;
+      toast('Entrée validée avec succès !', 'success');
+      loadStaffEvents();
+    } catch (err) {
+      area.innerHTML = `
+        <div class="scan-alert-error">
+          <div style="font-size:1.3rem;margin-bottom:4px">⛔ REFUS D'ENTRÉE</div>
+          <div>${escapeHtml(err.message)}</div>
+          <div style="margin-top:6px;font-size:.88rem;opacity:.9">Code scanné : <strong>${escapeHtml(code)}</strong></div>
+        </div>
+      `;
+      toast('Échec du contrôle d\'accès', 'error');
+    }
+  }
+
+  // Création / Édition d'événement dans le Drawer
+  const newEvBtn = $('#newEventBtn');
+  if (newEvBtn) newEvBtn.addEventListener('click', () => openEventDrawer(null));
+
+  function openEventDrawer(ev) {
+    const isNew = !ev;
+    $('#drawerTitle').textContent = isNew ? 'Nouvel Événement' : 'Modifier l’événement';
+
+    let tickets = (ev && ev.ticket_types) || [
+      { name: 'Pass Standard', price: 5000, quantity_available: 100, description: 'Accès simple' },
+      { name: 'Pass VIP', price: 15000, quantity_available: 30, description: 'Carré VIP + coupe' },
+    ];
+
+    function renderDrawerForm() {
+      $('#drawerContent').innerHTML = `
+        <form id="eventStaffForm" class="product-form">
+          <div class="field">
+            <label for="evTitle">Titre de l'événement *</label>
+            <input id="evTitle" value="${escapeHtml(ev ? ev.title : '')}" placeholder="Ex. GUELEDE XPERIENCE × NATIVE HOTEL" required />
+          </div>
+          <div class="field">
+            <label for="evSubtitle">Sous-titre / Thème</label>
+            <input id="evSubtitle" value="${escapeHtml(ev && ev.subtitle ? ev.subtitle : '')}" placeholder="Ex. Séance Principale · Inauguration" />
+          </div>
+          <div class="field">
+            <label for="evVenueType">Type d'espace / Ambiance *</label>
+            <select id="evVenueType" class="field" style="margin:0">
+              <option value="restaurant" ${ev && ev.venue_type === 'restaurant' ? 'selected' : ''}>🍽️ Restaurant & Gastronomie</option>
+              <option value="nightclub" ${ev && ev.venue_type === 'nightclub' ? 'selected' : ''}>🪩 Boîte de nuit & Soirées DJ</option>
+              <option value="hotel" ${ev && ev.venue_type === 'hotel' ? 'selected' : ''}>🏨 Événement Hôtel & Séjours</option>
+              <option value="lounge" ${ev && ev.venue_type === 'lounge' ? 'selected' : ''}>🍸 Bar-Lounge & Rooftop</option>
+            </select>
+          </div>
+          <div class="flex" style="gap:10px">
+            <div class="field grow">
+              <label for="evVenueName">Nom de l'établissement / salle *</label>
+              <input id="evVenueName" value="${escapeHtml(ev ? ev.venue_name : '')}" placeholder="Ex. NATIVE HOTEL Ouidah (Villa RCC)" required />
+            </div>
+            <div class="field grow">
+              <label for="evLocation">Ville / Localisation *</label>
+              <input id="evLocation" value="${escapeHtml(ev ? ev.location : '')}" placeholder="Ex. Ouidah, Bénin" required />
+            </div>
+          </div>
+          <div class="flex" style="gap:10px">
+            <div class="field grow">
+              <label for="evDate">Date (AAAA-MM-JJ) *</label>
+              <input id="evDate" type="date" value="${escapeHtml(ev ? ev.event_date : '')}" required />
+            </div>
+            <div class="field grow">
+              <label for="evTime">Heure de début *</label>
+              <input id="evTime" type="time" value="${escapeHtml(ev ? ev.event_time : '20:00')}" required />
+            </div>
+          </div>
+          <div class="flex" style="gap:10px">
+            <div class="field grow">
+              <label for="evBadge">Badge mis en avant</label>
+              <input id="evBadge" value="${escapeHtml(ev && ev.badge ? ev.badge : '★ SÉANCE PRINCIPALE')}" placeholder="Ex. ★ SÉANCE PRINCIPALE" />
+            </div>
+            <div class="field grow">
+              <label for="evOrganizer">Organisateurs & Partenaires</label>
+              <input id="evOrganizer" value="${escapeHtml(ev && ev.organizer ? ev.organizer : '')}" placeholder="Ex. Rosyne Club & Guests" />
+            </div>
+          </div>
+          <div class="field">
+            <label for="evImage">Affiche / Image (URL https://)</label>
+            <input id="evImage" value="${escapeHtml(ev && ev.image_url ? ev.image_url : '')}" placeholder="https://images.unsplash.com/..." />
+          </div>
+          <div class="field">
+            <label for="evDesc">Description complète de l'événement</label>
+            <textarea id="evDesc" rows="3" placeholder="Présentation du programme, des artistes, du menu ou des formules...">${escapeHtml(ev && ev.description ? ev.description : '')}</textarea>
+          </div>
+          <div class="field">
+            <label for="evStatus">Statut</label>
+            <select id="evStatus" class="field" style="margin:0">
+              <option value="published" ${!ev || ev.status === 'published' ? 'selected' : ''}>Publié (billets en vente)</option>
+              <option value="sold_out" ${ev && ev.status === 'sold_out' ? 'selected' : ''}>Complet</option>
+              <option value="cancelled" ${ev && ev.status === 'cancelled' ? 'selected' : ''}>Annulé</option>
+            </select>
+          </div>
+
+          <h4 style="margin:16px 0 8px">Types de Billets &amp; Tarifs</h4>
+          <div id="drawerTicketsList">
+            ${tickets.map((t, idx) => `
+              <div class="card" style="padding:12px;margin-bottom:10px;background:#f8fafc" data-tidx="${idx}">
+                <div class="between flex" style="margin-bottom:6px">
+                  <strong>Formule #${idx + 1}</strong>
+                  ${tickets.length > 1 ? `<button type="button" class="link-btn small-link" data-remove-tkt="${idx}" style="color:#b91c1c">Supprimer</button>` : ''}
+                </div>
+                <div class="field" style="margin-bottom:6px">
+                  <input class="tkt-name field" value="${escapeHtml(t.name)}" placeholder="Nom (ex. Pass Standard, Table VIP...)" required style="margin:0" />
+                </div>
+                <div class="flex" style="gap:8px;margin-bottom:6px">
+                  <div class="field grow" style="margin:0">
+                    <label style="font-size:.76rem">Prix (FCFA)</label>
+                    <input class="tkt-price field" type="number" min="0" value="${t.price}" required style="margin:0" />
+                  </div>
+                  <div class="field grow" style="margin:0">
+                    <label style="font-size:.76rem">Quota (Places)</label>
+                    <input class="tkt-quota field" type="number" min="1" value="${t.quantity_available || 50}" required style="margin:0" />
+                  </div>
+                </div>
+                <div class="field" style="margin:0">
+                  <input class="tkt-desc field" value="${escapeHtml(t.description || '')}" placeholder="Description / Avantages inclus" style="margin:0" />
+                </div>
+              </div>
+            `).join('')}
+          </div>
+          <button type="button" class="btn secondary small" id="addTicketTypeBtn" style="margin-bottom:16px">+ Ajouter une formule de billet</button>
+        </form>
+      `;
+
+      $('#addTicketTypeBtn').addEventListener('click', () => {
+        collectTicketsFromDOM();
+        tickets.push({ name: 'Pass VIP', price: 15000, quantity_available: 20, description: 'Accès espace réservé' });
+        renderDrawerForm();
+      });
+
+      $$('[data-remove-tkt]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          collectTicketsFromDOM();
+          const idx = parseInt(btn.dataset.removeTkt, 10);
+          tickets.splice(idx, 1);
+          renderDrawerForm();
+        });
+      });
+    }
+
+    function collectTicketsFromDOM() {
+      const rows = $$('#drawerTicketsList [data-tidx]');
+      tickets = Array.from(rows).map((row, i) => {
+        const orig = tickets[i] || {};
+        return {
+          id: orig.id,
+          name: row.querySelector('.tkt-name').value.trim(),
+          price: parseInt(row.querySelector('.tkt-price').value, 10) || 0,
+          quantity_available: parseInt(row.querySelector('.tkt-quota').value, 10) || 50,
+          quantity_sold: orig.quantity_sold || 0,
+          description: row.querySelector('.tkt-desc').value.trim(),
+        };
+      });
+    }
+
+    renderDrawerForm();
+
+    $('#drawerFooter').innerHTML = `
+      <div class="between flex" style="width:100%">
+        <button class="btn secondary" type="button" id="drawerCancel">Annuler</button>
+        <button class="btn success" type="button" id="drawerSaveEvent">${isNew ? 'Créer l’événement' : 'Enregistrer les modifications'}</button>
+      </div>
+    `;
+
+    $('#drawerCancel').addEventListener('click', closeDrawer);
+    $('#drawerSaveEvent').addEventListener('click', async () => {
+      collectTicketsFromDOM();
+      const title = ($('#evTitle').value || '').trim();
+      const venue_type = $('#evVenueType').value;
+      const venue_name = ($('#evVenueName').value || '').trim();
+      const location = ($('#evLocation').value || '').trim();
+      const event_date = ($('#evDate').value || '').trim();
+      const event_time = ($('#evTime').value || '').trim();
+
+      if (!title || !venue_name || !location || !event_date || !event_time) {
+        toast('Veuillez remplir tous les champs obligatoires (*).', 'error');
+        return;
+      }
+
+      const payload = {
+        title,
+        subtitle: ($('#evSubtitle').value || '').trim(),
+        venue_type,
+        venue_name,
+        location,
+        event_date,
+        event_time,
+        badge: ($('#evBadge').value || '').trim(),
+        organizer: ($('#evOrganizer').value || '').trim(),
+        image_url: ($('#evImage').value || '').trim(),
+        description: ($('#evDesc').value || '').trim(),
+        status: $('#evStatus').value,
+        ticket_types: tickets,
+      };
+
+      try {
+        if (isNew) {
+          await api('/evenements', { method: 'POST', body: payload });
+          toast('Événement créé avec succès !', 'success');
+        } else {
+          await api('/evenements/' + ev.id, { method: 'PUT', body: payload });
+          toast('Événement mis à jour', 'success');
+        }
+        closeDrawer();
+        loadStaffEvents();
+      } catch (err) {
+        toast(err.message, 'error');
+      }
+    });
+
+    openDrawer();
+  }
+
   /* ---------- Tiroir ---------- */
   function openDrawer() { $('#drawer').classList.add('open'); $('#drawer').setAttribute('aria-hidden', 'false'); $('#drawerOverlay').classList.add('open'); $('#drawerOverlay').setAttribute('aria-hidden', 'false'); }
   function closeDrawer() { $('#drawer').classList.remove('open'); $('#drawer').setAttribute('aria-hidden', 'true'); $('#drawerOverlay').classList.remove('open'); $('#drawerOverlay').setAttribute('aria-hidden', 'true'); }
@@ -847,6 +1286,14 @@
     if (rt) rt.close();
     rt = connectRealtime((ev) => {
       if (ev.type === 'settings:update') { Brand.load(); return; }
+      if (ev.type === 'ticket:new') {
+        toast('Nouveau billet acheté : ' + (ev.eventTitle || 'Événement') + ' (' + ev.customerName + ')', 'success');
+        if (currentTab === 'events') loadStaffEvents();
+      } else if (ev.type === 'ticket:checkin') {
+        if (currentTab === 'events') loadStaffEvents();
+      } else if (ev.type && ev.type.startsWith('event:')) {
+        if (currentTab === 'events') loadStaffEvents();
+      }
       if (ev.type === 'order:new') {
         toast('Nouvelle commande #' + ev.order.id + ' — ' + ev.order.customer_name, 'success');
         if (ALERT_ROLES.includes(role())) newOrderAlert(ev.order);

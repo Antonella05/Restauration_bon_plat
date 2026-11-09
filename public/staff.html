@@ -202,19 +202,110 @@
           <div class="brand-actions"><button class="btn" type="submit" id="brandSave">Enregistrer la personnalisation</button></div>
         </form>
       </section>
+
+      <!-- VUE ÉVÉNEMENTS & BILLETTERIE (admin, gérant, callcenter, dev) -->
+      <section id="viewEvents" class="hidden">
+        <div class="between flex" style="margin:22px 0 14px">
+          <div>
+            <h2 class="section-title" style="margin:0">Événements &amp; Billetterie</h2>
+            <p class="muted" style="margin:2px 0 0;font-size:.88rem">Soirées boîte de nuit, dîners-concerts restaurant, événements hôtel et contrôle des entrées.</p>
+          </div>
+          <button class="btn small" id="newEventBtn">+ Nouvel événement</button>
+        </div>
+
+        <!-- Statistiques Billetterie -->
+        <div id="eventsStatsRow" class="stat-row" style="margin-bottom:24px"></div>
+
+        <!-- Scanner & Contrôle d'accès à l'entrée -->
+        <div class="card staff-scan-box">
+          <div style="display:inline-flex;align-items:center;gap:8px;font-size:1.1rem;font-weight:700;color:#059669;margin-bottom:6px">
+            <span>📷</span> Contrôle d'Accès &amp; Validation des Billets (Check-in)
+          </div>
+          <p class="muted" style="margin:0 0 14px;font-size:.88rem">Scannez le QR code du client ou saisissez la référence du billet pour autoriser ou refuser l'entrée.</p>
+          <form id="checkinForm" style="display:flex;gap:10px;justify-content:center;max-width:540px;margin:0 auto">
+            <input id="checkinCodeInput" class="field staff-scan-input" placeholder="Ex. TKT-2026-X8Y2" autocomplete="off" style="margin:0" required />
+            <button class="btn success" type="submit" style="padding:10px 22px;white-space:nowrap">Valider l'entrée</button>
+          </form>
+          <div id="scanResultArea"></div>
+        </div>
+
+        <!-- Gestion des événements -->
+        <div class="card" style="padding:18px;margin-bottom:24px">
+          <h3 style="margin:0 0 14px">Liste des Événements Programmés</h3>
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Affiche</th>
+                  <th>Événement</th>
+                  <th>Type / Lieu</th>
+                  <th>Date &amp; Heure</th>
+                  <th>Billetterie (Vendus / Quota)</th>
+                  <th>Statut</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="staffEventsTableBody">
+                <tr><td colspan="7" class="muted" style="text-align:center">Chargement des événements...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- Registre des réservations et billets vendus -->
+        <div class="card" style="padding:18px">
+          <div class="between flex" style="margin-bottom:14px;flex-wrap:wrap;gap:10px">
+            <h3 style="margin:0">Registre des Billets Émis</h3>
+            <div class="flex" style="gap:10px">
+              <input id="ticketSearchInput" class="field" placeholder="Rechercher par nom, tél, code..." style="margin:0;min-width:240px" />
+              <select id="ticketEventFilter" class="field" style="margin:0;min-width:180px">
+                <option value="">Tous les événements</option>
+              </select>
+              <select id="ticketStatusFilter" class="field" style="margin:0;min-width:140px">
+                <option value="">Tous statuts</option>
+                <option value="valid">Valide</option>
+                <option value="used">Composté / Utilisé</option>
+                <option value="cancelled">Annulé</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table class="data">
+              <thead>
+                <tr>
+                  <th>Code Billet</th>
+                  <th>Événement</th>
+                  <th>Client</th>
+                  <th>Téléphone</th>
+                  <th>Formule &amp; Places</th>
+                  <th>Montant</th>
+                  <th>Paiement</th>
+                  <th>Statut</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="staffTicketsTableBody">
+                <tr><td colspan="9" class="muted" style="text-align:center">Chargement des billets...</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
     </main>
   </div>
 
-  <!-- MODALE PRODUIT -->
+  <!-- MODALE PRODUIT / ÉVÉNEMENT -->
   <div id="drawerOverlay" class="drawer-overlay" aria-hidden="true"></div>
   <aside id="drawer" class="drawer" role="dialog" aria-modal="true" aria-hidden="true" aria-labelledby="drawerTitle">
-    <header><h2 id="drawerTitle">Produit</h2><button class="close-x" id="drawerClose" aria-label="Fermer">&times;</button></header>
+    <header><h2 id="drawerTitle">Détail</h2><button class="close-x" id="drawerClose" aria-label="Fermer">&times;</button></header>
     <div class="content" id="drawerContent"></div>
     <footer id="drawerFooter"></footer>
   </aside>
 
   <div id="toasts"></div>
 
+  <script src="/js/qr.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/staff.js"></script>
 </body>

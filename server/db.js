@@ -87,12 +87,64 @@ if (usePostgres) {
       id INTEGER PRIMARY KEY AUTOINCREMENT, customer_id INTEGER, payload TEXT NOT NULL,
       created_at TEXT NOT NULL DEFAULT (datetime('now'))
     );
+    CREATE TABLE IF NOT EXISTS events (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      title TEXT NOT NULL,
+      subtitle TEXT,
+      venue_type TEXT NOT NULL DEFAULT 'restaurant',
+      venue_name TEXT NOT NULL,
+      location TEXT NOT NULL,
+      event_date TEXT NOT NULL,
+      event_time TEXT NOT NULL,
+      description TEXT,
+      image_url TEXT,
+      badge TEXT,
+      organizer TEXT,
+      featured INTEGER NOT NULL DEFAULT 0,
+      status TEXT NOT NULL DEFAULT 'published',
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
+    CREATE TABLE IF NOT EXISTS ticket_types (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      name TEXT NOT NULL,
+      description TEXT,
+      price INTEGER NOT NULL DEFAULT 0,
+      quantity_available INTEGER NOT NULL DEFAULT 50,
+      quantity_sold INTEGER NOT NULL DEFAULT 0,
+      sort_order INTEGER NOT NULL DEFAULT 0
+    );
+    CREATE TABLE IF NOT EXISTS event_tickets (
+      id INTEGER PRIMARY KEY AUTOINCREMENT,
+      ticket_code TEXT NOT NULL UNIQUE,
+      event_id INTEGER NOT NULL REFERENCES events(id) ON DELETE CASCADE,
+      ticket_type_id INTEGER NOT NULL REFERENCES ticket_types(id) ON DELETE CASCADE,
+      customer_id INTEGER REFERENCES users(id),
+      customer_name TEXT NOT NULL,
+      customer_phone TEXT NOT NULL,
+      customer_email TEXT,
+      quantity INTEGER NOT NULL DEFAULT 1,
+      unit_price INTEGER NOT NULL,
+      total_price INTEGER NOT NULL,
+      payment_method TEXT NOT NULL DEFAULT 'momo_mtn',
+      payment_status TEXT NOT NULL DEFAULT 'confirmed',
+      status TEXT NOT NULL DEFAULT 'valid',
+      used_at TEXT,
+      qr_data TEXT NOT NULL,
+      created_at TEXT NOT NULL DEFAULT (datetime('now'))
+    );
     CREATE INDEX IF NOT EXISTS idx_products_category ON products(category_id);
     CREATE INDEX IF NOT EXISTS idx_orders_status ON orders(status);
     CREATE INDEX IF NOT EXISTS idx_order_items_order ON order_items(order_id);
     CREATE INDEX IF NOT EXISTS idx_order_mods_order ON order_modifications(order_id);
     CREATE INDEX IF NOT EXISTS idx_orders_completed ON orders(completed_at);
     CREATE INDEX IF NOT EXISTS idx_realtime_events_customer ON realtime_events(customer_id, id);
+    CREATE INDEX IF NOT EXISTS idx_events_status ON events(status);
+    CREATE INDEX IF NOT EXISTS idx_events_date ON events(event_date);
+    CREATE INDEX IF NOT EXISTS idx_ticket_types_event ON ticket_types(event_id);
+    CREATE INDEX IF NOT EXISTS idx_event_tickets_code ON event_tickets(ticket_code);
+    CREATE INDEX IF NOT EXISTS idx_event_tickets_phone ON event_tickets(customer_phone);
+    CREATE INDEX IF NOT EXISTS idx_event_tickets_event ON event_tickets(event_id);
   `);
 
   function addColumn(table, column, definition) {

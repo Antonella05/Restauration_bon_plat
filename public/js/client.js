@@ -12,6 +12,10 @@
   let activeCat = null;
   let cart = [];          // { product, qty }
   let myOrders = [];
+  let myTickets = [];
+  let eventsList = [];
+  let currentVenueFilter = 'all';
+  let eventSearchTerm = '';
   let rt = null;
   let pendingAfterLogin = null;   // action à exécuter après connexion
 
@@ -31,8 +35,9 @@
     await Brand.load();
     applyHome();
     await loadMenu();
+    await loadEvents();
     startRealtime();
-    if (isClient()) { refreshProfile(); loadOrders(); }
+    if (isClient()) { refreshProfile(); loadOrders(); loadMyTickets(); }
   }
 
   /** Recharge le profil mémorisé (adresse, position, mode préféré) depuis le serveur. */
@@ -66,6 +71,7 @@
     $('#logoutBtn').classList.toggle('hidden', !logged);
     $('#userChip').classList.toggle('hidden', !logged);
     $('#navOrders').classList.toggle('hidden', !logged);
+    if ($('#navTickets')) $('#navTickets').classList.toggle('hidden', !logged);
     if (logged) $('#userName').textContent = Auth.user.name;
   }
 
@@ -115,7 +121,9 @@
   function setView(view) {
     $('#viewHome').classList.toggle('hidden', view !== 'home');
     $('#viewOrders').classList.toggle('hidden', view !== 'orders');
+    if ($('#viewTickets')) $('#viewTickets').classList.toggle('hidden', view !== 'tickets');
     if (view === 'orders') loadOrders();
+    if (view === 'tickets') loadMyTickets();
     window.scrollTo({ top: 0, behavior: 'smooth' });
   }
   $$('[data-view]').forEach((b) => b.addEventListener('click', (e) => {
@@ -124,6 +132,11 @@
     if (v === 'orders' && !isClient()) {
       pendingAfterLogin = () => setView('orders');
       openLogin({ title: 'Vos commandes', sub: 'Connectez-vous pour retrouver et suivre vos commandes.' });
+      return;
+    }
+    if (v === 'tickets' && !isClient()) {
+      pendingAfterLogin = () => setView('tickets');
+      openLogin({ title: 'Vos billets', sub: 'Connectez-vous pour retrouver vos billets électroniques et QR codes.' });
       return;
     }
     setView(v);
@@ -725,11 +738,519 @@
     }));
   }
 
+  /* ============================================================
+     ÉVÉNEMENTS & BILLETTERIE (Restaurant, Boîte de nuit, Hôtel)
+     ============================================================ */
+
+  const VENUE_CONFIG = {
+    restaurant: { label: '🍽️ Restaurant & Live', icon: '🍽️', tag: 'Restaurant & Gastronomie' },
+    nightclub: { label: '🪩 Boîte de nuit', icon: '🪩', tag: 'Clubbing & Nightlife' },
+    hotel: { label: '🏨 Événement Hôtel', icon: '🏨', tag: 'Hôtel & Villa Prestige' },
+    lounge: { label: '🍸 Bar-Lounge', icon: '🍸', tag: 'Lounge & Rooftop' },
+  };
+
+  function formatEventDate(dateStr, timeStr) {
+    if (!dateStr) return timeStr || '';
+    try {
+      const parts = dateStr.split('-');
+      if (parts.length !== 3) return `${dateStr} · ${timeStr}`;
+      const [y, m, d] = parts;
+      const months = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet', 'août', 'septembre', 'octobre', 'novembre', 'décembre'];
+      const monthName = months[parseInt(m, 10) - 1] || m;
+      return `${parseInt(d, 10)} ${monthName} ${y}${timeStr ? ' · ' + timeStr : ''}`;
+    } catch (e) {
+      return `${dateStr} · ${timeStr}`;
+    }
+  }
+
+  async function loadEvents() {
+    const grid = $('#eventsGrid');
+    if (!grid) return;
+    try {
+      let query = '?status=published';
+      if (currentVenueFilter && currentVenueFilter !== 'all') {
+        query += '&venue_type=' + encodeURIComponent(currentVenueFilter);
+      }
+      if (eventSearchTerm && eventSearchTerm.trim()) {
+        query += '&search=' + encodeURIComponent(eventSearchTerm.trim());
+      }
+      const data = await api('/evenements' + query);
+      eventsList = data.events || [];
+      renderEvents();
+    } catch (err) {
+      grid.innerHTML = `<p class="muted" style="grid-column:1/-1;text-align:center;padding:30px 0">Impossible de charger les événements actuellement.</p>`;
+    }
+  }
+
+  function renderEvents() {
+    const grid = $('#eventsGrid');
+    if (!grid) return;
+    if (!eventsList.length) {
+      grid.innerHTML = `
+        <div style="grid-column:1/-1;text-align:center;padding:48px 20px;background:var(--card);border-radius:18px;border:1px solid var(--line)">
+          <div style="font-size:2.4rem;margin-bottom:12px">🎭</div>
+          <h3 style="margin:0 0 8px">Aucun événement ne correspond à votre recherche</h3>
+          <p class="muted" style="margin:0 0 16px">Essayez un autre mot-clé ou réinitialisez les filtres.</p>
+          <button class="btn small secondary" id="resetEventFilters">Voir tous les événements</button>
+        </div>`;
+      const r = $('#resetEventFilters');
+      if (r) r.addEventListener('click', () => {
+        currentVenueFilter = 'all';
+        eventSearchTerm = '';
+        if ($('#eventSearchInput')) $('#eventSearchInput').value = '';
+        $$('.venue-filter-btn').forEach((b) => b.classList.toggle('active', b.dataset.venue === 'all'));
+        loadEvents();
+      });
+      return;
+    }
+
+    grid.innerHTML = eventsList.map((ev) => {
+      const venue = VENUE_CONFIG[ev.venue_type] || VENUE_CONFIG.restaurant;
+      const fallbackImg = ev.venue_type === 'nightclub'
+        ? 'https://images.unsplash.com/photo-1545128485-c400e7702796?auto=format&fit=crop&w=800&q=70'
+        : (ev.venue_type === 'hotel'
+          ? 'https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?auto=format&fit=crop&w=800&q=70'
+          : 'https://images.unsplash.com/photo-1555244162-803834f70033?auto=format&fit=crop&w=800&q=70');
+
+      const img = isSafeImage(ev.image_url) ? ev.image_url : fallbackImg;
+      const isSoldOut = ev.is_sold_out;
+
+      return `
+        <article class="event-card-dark" data-card-event="${ev.id}">
+          <div class="event-card-image-wrap">
+            <img src="${escapeHtml(img)}" alt="${escapeHtml(ev.title)}" loading="lazy" />
+            <div class="event-card-overlay"></div>
+            <span class="event-venue-type-tag">${venue.icon} ${venue.tag}</span>
+            ${ev.badge ? `<span class="event-badge-glow">${escapeHtml(ev.badge)}</span>` : ''}
+          </div>
+          <div class="event-card-body">
+            <div class="event-brands-row">
+              <span>★ ${escapeHtml(ev.organizer || 'LE BON PLAT')}</span>
+              <span>•</span>
+              <span>${venue.icon} ${escapeHtml(ev.venue_name)}</span>
+            </div>
+            <h3 class="event-card-title">${escapeHtml(ev.title)}</h3>
+            ${ev.subtitle ? `<div class="event-card-subtitle">${escapeHtml(ev.subtitle)}</div>` : ''}
+            
+            <div class="event-meta-list">
+              <div class="event-meta-item">
+                <span class="event-meta-icon">📍</span>
+                <span>${escapeHtml(ev.venue_name)} · <strong>${escapeHtml(ev.location)}</strong></span>
+              </div>
+              <div class="event-meta-item">
+                <span class="event-meta-icon">📅</span>
+                <span>${formatEventDate(ev.event_date, ev.event_time)}</span>
+              </div>
+            </div>
+
+            <p class="event-card-desc">${escapeHtml(ev.description || '')}</p>
+
+            <div class="event-card-foot">
+              <div class="event-price-box">
+                <span class="event-price-label">${isSoldOut ? 'Statut' : 'Tarif'}</span>
+                <span class="event-price-amount">${isSoldOut ? 'COMPLET' : (ev.min_price ? 'À partir de ' + fmtMoney(ev.min_price) : 'Entrée libre')}</span>
+              </div>
+              <button class="btn-book-ticket" data-book-event="${ev.id}" ${isSoldOut ? 'disabled' : ''}>
+                ${isSoldOut ? 'Complet' : '🎫 Réserver maintenant'}
+              </button>
+            </div>
+          </div>
+        </article>
+      `;
+    }).join('');
+
+    $$('[data-book-event]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault();
+        const evId = parseInt(btn.dataset.bookEvent, 10);
+        openTicketModal(evId);
+      });
+    });
+  }
+
+  // Recherche d'événement
+  const searchForm = $('#eventSearchForm');
+  if (searchForm) {
+    searchForm.addEventListener('submit', (e) => {
+      e.preventDefault();
+      eventSearchTerm = ($('#eventSearchInput').value || '').trim();
+      loadEvents();
+    });
+  }
+
+  // Filtres par type d'espace (Boîte de nuit, Restaurant, Hôtel...)
+  $$('#venueFilters .venue-filter-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      $$('#venueFilters .venue-filter-btn').forEach((b) => b.classList.remove('active'));
+      btn.classList.add('active');
+      currentVenueFilter = btn.dataset.venue || 'all';
+      loadEvents();
+    });
+  });
+
+  /* ---------- Modale de réservation de billets ---------- */
+  function openTicketModal(eventId) {
+    const ev = eventsList.find((x) => x.id === eventId);
+    if (!ev) return;
+
+    const overlay = $('#ticketModalOverlay');
+    const container = $('#ticketModalContent');
+    if (!overlay || !container) return;
+
+    const tickets = ev.ticket_types || [];
+    if (!tickets.length) {
+      toast('Aucun billet configuré pour cet événement.', 'error');
+      return;
+    }
+
+    const u = Auth.user || {};
+    let selectedTicketId = tickets[0].id;
+
+    function renderModalForm() {
+      const selectedTicket = tickets.find((t) => t.id === selectedTicketId) || tickets[0];
+      const maxQty = Math.max(1, Math.min(10, selectedTicket.available_left || 10));
+
+      container.innerHTML = `
+        <div style="margin-bottom:18px">
+          <span class="badge" style="background:#059669;color:#ffffff;margin-bottom:8px">Billetterie officielle</span>
+          <h2 id="tktModalTitle" style="margin:4px 0 6px;font-size:1.35rem">${escapeHtml(ev.title)}</h2>
+          <div class="muted" style="font-size:.88rem">📍 ${escapeHtml(ev.venue_name)} (${escapeHtml(ev.location)}) · 📅 ${formatEventDate(ev.event_date, ev.event_time)}</div>
+        </div>
+
+        <form id="ticketBookingForm">
+          <label style="display:block;font-weight:700;margin-bottom:8px">1. Choisissez votre type de billet :</label>
+          <div style="margin-bottom:18px">
+            ${tickets.map((t) => {
+              const sel = t.id === selectedTicketId;
+              const soldOut = t.available_left <= 0;
+              return `
+                <div class="ticket-type-option ${sel ? 'selected' : ''}" data-tkt-id="${t.id}" style="${soldOut ? 'opacity:.5;cursor:not-allowed' : ''}">
+                  <div style="display:flex;align-items:center;gap:12px">
+                    <input type="radio" name="ticket_choice" value="${t.id}" ${sel ? 'checked' : ''} ${soldOut ? 'disabled' : ''} />
+                    <div>
+                      <strong style="color:var(--ink);font-size:1rem">${escapeHtml(t.name)}</strong>
+                      ${t.description ? `<div class="muted" style="font-size:.82rem">${escapeHtml(t.description)}</div>` : ''}
+                      <div style="font-size:.76rem;color:#059669;font-weight:600;margin-top:2px">
+                        ${soldOut ? 'Complet' : `${t.available_left} places disponibles`}
+                      </div>
+                    </div>
+                  </div>
+                  <div style="font-family:var(--mono);font-weight:700;font-size:1.1rem;color:#059669">
+                    ${fmtMoney(t.price)}
+                  </div>
+                </div>
+              `;
+            }).join('')}
+          </div>
+
+          <div class="field" style="margin-bottom:16px">
+            <label for="modalTktQty" style="font-weight:700">2. Nombre de places :</label>
+            <div style="display:flex;align-items:center;gap:12px">
+              <input id="modalTktQty" type="number" min="1" max="${maxQty}" value="1" style="width:100px;font-family:var(--mono);font-size:1.1rem;font-weight:700;padding:8px" />
+              <span class="muted" style="font-size:.85rem">Max ${maxQty} billet(s) par réservation</span>
+            </div>
+          </div>
+
+          <div style="margin-bottom:18px;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--line)">
+            <label style="display:block;font-weight:700;margin-bottom:10px">3. Coordonnées de l'acheteur :</label>
+            <div class="field" style="margin-bottom:10px">
+              <label for="modalTktName">Nom complet *</label>
+              <input id="modalTktName" type="text" value="${escapeHtml(u.name || '')}" placeholder="Ex. Marc Houessou" required />
+            </div>
+            <div class="field" style="margin-bottom:10px">
+              <label for="modalTktPhone">Numéro de téléphone (Mobile Money / SMS) *</label>
+              <input id="modalTktPhone" type="tel" value="${escapeHtml(u.phone || '')}" placeholder="Ex. 97 00 00 00" required />
+            </div>
+            <div class="field">
+              <label for="modalTktEmail">Email (optionnel, pour recevoir le e-ticket)</label>
+              <input id="modalTktEmail" type="email" placeholder="Ex. marc@example.com" />
+            </div>
+          </div>
+
+          <div style="margin-bottom:20px">
+            <label style="display:block;font-weight:700;margin-bottom:8px">4. Mode de paiement :</label>
+            <div class="radio-row">
+              <div class="radio-card active" data-tkt-pay="momo_mtn">
+                <span style="font-size:1.3rem">🟡</span> MTN MoMo
+                <small>Paiement sécurisé</small>
+              </div>
+              <div class="radio-card" data-tkt-pay="momo_moov">
+                <span style="font-size:1.3rem">🔵</span> Moov Money
+                <small>Paiement sécurisé</small>
+              </div>
+              <div class="radio-card" data-tkt-pay="cash">
+                <span style="font-size:1.3rem">💵</span> À l'entrée
+                <small>Paiement sur place</small>
+              </div>
+            </div>
+          </div>
+
+          <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;padding:14px 18px;border-radius:14px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+            <div>
+              <div style="font-size:.82rem;text-transform:uppercase;color:#047857;font-weight:700">Total à payer</div>
+              <div class="muted" style="font-size:.82rem" id="modalTktSummary">1 × ${escapeHtml(selectedTicket.name)}</div>
+            </div>
+            <div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#059669" id="modalTktTotal">
+              ${fmtMoney(selectedTicket.price)}
+            </div>
+          </div>
+
+          <button class="btn block success" id="submitTicketBtn" type="submit" style="padding:14px;font-size:1.05rem">
+            🎟️ Confirmer &amp; Obtenir mon billet
+          </button>
+        </form>
+      `;
+
+      // Clic sur option de billet
+      $$('.ticket-type-option').forEach((opt) => {
+        opt.addEventListener('click', () => {
+          const tId = parseInt(opt.dataset.tktId, 10);
+          const target = tickets.find((x) => x.id === tId);
+          if (!target || target.available_left <= 0) return;
+          selectedTicketId = tId;
+          renderModalForm();
+        });
+      });
+
+      // Calcul dynamique sur changement de quantité
+      const qtyInput = $('#modalTktQty');
+      const updateTotalDisplay = () => {
+        const q = Math.max(1, Math.min(maxQty, parseInt(qtyInput.value, 10) || 1));
+        const tRow = tickets.find((x) => x.id === selectedTicketId) || tickets[0];
+        $('#modalTktTotal').textContent = fmtMoney(tRow.price * q);
+        $('#modalTktSummary').textContent = `${q} × ${tRow.name}`;
+      };
+      qtyInput.addEventListener('input', updateTotalDisplay);
+      qtyInput.addEventListener('change', updateTotalDisplay);
+
+      // Sélection paiement
+      $$('[data-tkt-pay]').forEach((card) => {
+        card.addEventListener('click', () => {
+          $$('[data-tkt-pay]').forEach((c) => c.classList.remove('active'));
+          card.classList.add('active');
+        });
+      });
+
+      // Soumission formulaire de réservation
+      $('#ticketBookingForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const submitBtn = $('#submitTicketBtn');
+        submitBtn.disabled = true;
+        submitBtn.textContent = 'Génération de votre billet...';
+
+        const name = ($('#modalTktName').value || '').trim();
+        const phone = ($('#modalTktPhone').value || '').trim();
+        const email = ($('#modalTktEmail').value || '').trim();
+        const qty = parseInt($('#modalTktQty').value, 10) || 1;
+        const activePayCard = document.querySelector('[data-tkt-pay].active');
+        const payMethod = activePayCard ? activePayCard.dataset.tktPay : 'momo_mtn';
+
+        try {
+          const bookingResult = await api('/tickets/book', {
+            method: 'POST',
+            body: {
+              event_id: ev.id,
+              ticket_type_id: selectedTicketId,
+              quantity: qty,
+              customer_name: name,
+              customer_phone: phone,
+              customer_email: email,
+              payment_method: payMethod,
+            },
+          });
+
+          toast('Billet réservé avec succès !', 'success');
+          renderTicketSuccess(bookingResult);
+          loadEvents();
+          if (isClient()) loadMyTickets();
+        } catch (err) {
+          toast(err.message || 'Échec de la réservation.', 'error');
+          submitBtn.disabled = false;
+          submitBtn.textContent = '🎟️ Confirmer & Obtenir mon billet';
+        }
+      });
+    }
+
+    renderModalForm();
+    overlay.classList.add('open');
+    overlay.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeTicketModal() {
+    const overlay = $('#ticketModalOverlay');
+    if (overlay) {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+    }
+  }
+
+  const tktCloseBtn = $('#ticketModalClose');
+  if (tktCloseBtn) tktCloseBtn.addEventListener('click', closeTicketModal);
+
+  const tktOverlay = $('#ticketModalOverlay');
+  if (tktOverlay) {
+    tktOverlay.addEventListener('click', (e) => {
+      if (e.target === tktOverlay) closeTicketModal();
+    });
+  }
+
+  function renderTicketSuccess(bookingResult) {
+    const container = $('#ticketModalContent');
+    const { ticket, event, ticket_type } = bookingResult;
+
+    const qrSvg = QRCodeGen.generateSvg(ticket.ticket_code, { size: 190, fg: '#0f172a' });
+
+    container.innerHTML = `
+      <div style="text-align:center;margin-bottom:14px">
+        <div style="font-size:2.8rem">🎉</div>
+        <h2 style="margin:2px 0 4px;font-size:1.3rem">Félicitations ! Votre billet est prêt</h2>
+        <p class="muted" style="margin:0 0 16px;font-size:.88rem">Conservez précieusement ce e-ticket pour votre accès.</p>
+      </div>
+
+      <div class="e-ticket-card">
+        <div class="e-ticket-header">
+          <div class="e-ticket-brand">★ BILLET OFFICIEL ÉLECTRONIQUE</div>
+          <h3 class="e-ticket-title">${escapeHtml(event.title)}</h3>
+          <div class="e-ticket-venue">📍 ${escapeHtml(event.venue_name)} · ${escapeHtml(event.location)}</div>
+        </div>
+        <div class="e-ticket-tear"></div>
+        <div class="e-ticket-body">
+          <div class="e-ticket-qr-wrap">
+            ${qrSvg}
+          </div>
+          <div><span class="e-ticket-code">${escapeHtml(ticket.ticket_code)}</span></div>
+          <div class="e-ticket-grid">
+            <div>
+              <dt>Titulaire</dt>
+              <dd>${escapeHtml(ticket.customer_name)}</dd>
+            </div>
+            <div>
+              <dt>Formule</dt>
+              <dd>${escapeHtml(ticket_type.name)} (${ticket.quantity} pers.)</dd>
+            </div>
+            <div>
+              <dt>Date &amp; Heure</dt>
+              <dd>${formatEventDate(event.event_date, event.event_time)}</dd>
+            </div>
+            <div>
+              <dt>Total Réglé</dt>
+              <dd>${fmtMoney(ticket.total_price)}</dd>
+            </div>
+          </div>
+          <div style="margin: 12px 0">
+            <span class="e-ticket-status-pill e-ticket-status-valid">● Billet Valide (Entrée autorisée)</span>
+          </div>
+          <p class="muted" style="font-size:0.82rem;margin: 8px 0 16px">Présentez ce QR code à l'accueil pour être scanné et composté.</p>
+          <div class="flex" style="gap:10px;justify-content:center;flex-wrap:wrap">
+            <button class="btn secondary small" id="printTicketBtn">🖨️ Imprimer / Enregistrer</button>
+            <button class="btn small" id="viewAllMyTicketsBtn">Voir tous mes billets</button>
+            <button class="btn secondary small" id="closeTicketModalDoneBtn">Terminer</button>
+          </div>
+        </div>
+      </div>
+    `;
+
+    $('#printTicketBtn').addEventListener('click', () => window.print());
+    $('#viewAllMyTicketsBtn').addEventListener('click', () => {
+      closeTicketModal();
+      setView('tickets');
+    });
+    $('#closeTicketModalDoneBtn').addEventListener('click', closeTicketModal);
+  }
+
+  /* ---------- Mes Billets (vue client) ---------- */
+  async function loadMyTickets() {
+    if (!isClient()) return;
+    try {
+      const { tickets } = await api('/tickets/my');
+      myTickets = tickets || [];
+      renderMyTickets();
+      const validCount = myTickets.filter((t) => t.status === 'valid').length;
+      const dot = $('#ticketsDot');
+      if (dot) dot.innerHTML = validCount ? `<span class="cart-badge">${validCount}</span>` : '';
+    } catch (e) {
+      /* non connecté ou aucun billet */
+    }
+  }
+
+  function renderMyTickets() {
+    const list = $('#ticketsList');
+    if (!list) return;
+    if (!myTickets.length) {
+      list.innerHTML = `
+        <div class="card empty-orders" style="padding:48px 24px;text-align:center">
+          <div style="font-size:2.8rem;margin-bottom:12px">🎟️</div>
+          <h3>Vous n'avez aucun billet pour le moment</h3>
+          <p class="muted" style="margin:0 0 20px">Découvrez nos soirées clubbing, dîners-concerts et événements exclusifs.</p>
+          <button class="btn" data-scroll="#events">Parcourir les événements</button>
+        </div>`;
+      $$('#ticketsList [data-scroll]').forEach((b) => b.addEventListener('click', () => smoothTo(b.dataset.scroll)));
+      return;
+    }
+
+    list.innerHTML = `
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:28px">
+        ${myTickets.map((t) => {
+          const qrSvg = QRCodeGen.generateSvg(t.ticket_code, { size: 170, fg: '#0f172a' });
+          const isValid = t.status === 'valid';
+          const isUsed = t.status === 'used';
+
+          return `
+            <div class="e-ticket-card" style="margin:0">
+              <div class="e-ticket-header">
+                <div class="e-ticket-brand">★ BILLET OFFICIEL ÉLECTRONIQUE</div>
+                <h3 class="e-ticket-title">${escapeHtml(t.event_title)}</h3>
+                <div class="e-ticket-venue">📍 ${escapeHtml(t.venue_name)} · ${escapeHtml(t.event_location)}</div>
+              </div>
+              <div class="e-ticket-tear"></div>
+              <div class="e-ticket-body">
+                <div class="e-ticket-qr-wrap" style="${isUsed ? 'opacity:.4' : ''}">
+                  ${qrSvg}
+                </div>
+                <div><span class="e-ticket-code">${escapeHtml(t.ticket_code)}</span></div>
+                <div class="e-ticket-grid">
+                  <div>
+                    <dt>Titulaire</dt>
+                    <dd>${escapeHtml(t.customer_name)}</dd>
+                  </div>
+                  <div>
+                    <dt>Formule</dt>
+                    <dd>${escapeHtml(t.ticket_type_name)} (${t.quantity} pers.)</dd>
+                  </div>
+                  <div>
+                    <dt>Date &amp; Heure</dt>
+                    <dd>${formatEventDate(t.event_date, t.event_time)}</dd>
+                  </div>
+                  <div>
+                    <dt>Montant</dt>
+                    <dd>${fmtMoney(t.total_price)}</dd>
+                  </div>
+                </div>
+                <div style="margin: 12px 0">
+                  <span class="e-ticket-status-pill ${isValid ? 'e-ticket-status-valid' : 'e-ticket-status-used'}">
+                    ${isValid ? '● Billet Valide (Entrée autorisée)' : `✕ Composté le ${t.used_at || 'antérieurement'}`}
+                  </span>
+                </div>
+                <div class="flex" style="gap:10px;justify-content:center">
+                  <button class="btn secondary small" onclick="window.print()">🖨️ Imprimer</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }).join('')}
+      </div>
+    `;
+  }
+
   /* ---------- Temps réel ---------- */
   function startRealtime() {
     if (rt) rt.close();
     rt = connectRealtime((ev) => {
       if (ev.type === 'settings:update') { Brand.load().then(applyHome); return; }
+      if (ev.type && ev.type.startsWith('event:')) { loadEvents(); }
+      if (ev.type && ev.type.startsWith('ticket:')) {
+        if (isClient()) loadMyTickets();
+      }
       if (ev.type === 'order:update' || ev.type === 'order:new') {
         if (isClient()) loadOrders();
         const mine = ev.order && Auth.user && ev.order.customer_id === Auth.user.id;

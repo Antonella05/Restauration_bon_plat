@@ -95,4 +95,54 @@ test('API locale : menu, commandes, rôles, statistiques et événements', async
   const clientOrders = await request('/api/orders/mine', { token: clientLogin.data.token });
   assert.equal(clientOrders.response.status, 200);
   assert.equal(clientOrders.data.orders.length, 1);
+
+  // --- Tests Billetterie & Événements ---
+  const eventsList = await request('/api/evenements');
+  assert.equal(eventsList.response.status, 200);
+  assert.ok(eventsList.data.events.length >= 3);
+  const sampleEvent = eventsList.data.events.find((e) => e.title.includes('GUELEDE XPERIENCE'));
+  assert.ok(sampleEvent);
+  assert.ok(sampleEvent.ticket_types.length >= 2);
+
+  const chosenTicketType = sampleEvent.ticket_types[0];
+  const booking = await request('/api/tickets/book', {
+    method: 'POST',
+    token: clientLogin.data.token,
+    body: {
+      event_id: sampleEvent.id,
+      ticket_type_id: chosenTicketType.id,
+      quantity: 2,
+      customer_name: 'Client de test',
+      customer_phone: '99000001',
+      payment_method: 'momo_mtn',
+    },
+  });
+  assert.equal(booking.response.status, 201);
+  assert.ok(booking.data.ticket.ticket_code.startsWith('TKT-'));
+  assert.equal(booking.data.ticket.total_price, chosenTicketType.price * 2);
+
+  // Mes billets
+  const myTickets = await request('/api/tickets/my', { token: clientLogin.data.token });
+  assert.equal(myTickets.response.status, 200);
+  assert.equal(myTickets.data.tickets.length, 1);
+  assert.equal(myTickets.data.tickets[0].ticket_code, booking.data.ticket.ticket_code);
+
+  // Compostage à l'entrée par le staff
+  const checkin = await request('/api/tickets/checkin', {
+    method: 'POST',
+    token: staffLogin.data.token,
+    body: { code: booking.data.ticket.ticket_code },
+  });
+  assert.equal(checkin.response.status, 200);
+  assert.equal(checkin.data.ok, true);
+  assert.equal(checkin.data.ticket.status, 'used');
+
+  // Tentative de réutilisation (fraude)
+  const reuse = await request('/api/tickets/checkin', {
+    method: 'POST',
+    token: staffLogin.data.token,
+    body: { code: booking.data.ticket.ticket_code },
+  });
+  assert.equal(reuse.response.status, 400);
+  assert.equal(reuse.data.ok, false);
 });

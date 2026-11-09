@@ -21,9 +21,11 @@
         <a class="brand" href="#top"><span class="logo" aria-hidden="true" data-brand-logo><svg viewBox="0 0 24 24"><path d="M7 3v7M4 3v5a3 3 0 0 0 6 0V3M7 11v10M17 3v18M17 3c2 2 3 4 3 7h-3"/></svg></span> <span data-brand="name">Le Bon Plat</span></a>
         <nav class="nav-links" id="navLinks">
           <a href="#menu" data-nav>La carte</a>
+          <a href="#events" data-nav>Événements &amp; Billets</a>
           <a href="#how" data-nav>Comment ça marche</a>
           <a href="#avis" data-nav>Avis</a>
           <button id="navOrders" class="link-btn hidden" data-view="orders">Mes commandes <span id="ordersDot"></span></button>
+          <button id="navTickets" class="link-btn hidden" data-view="tickets">Mes billets <span id="ticketsDot"></span></button>
         </nav>
         <div class="nav-right">
           <button class="mobile-nav-toggle" id="mobileNavToggle" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="navLinks">Menu</button>
@@ -131,6 +133,76 @@
           <button class="text-link" data-scroll="#menu">Toute la carte</button>
         </header>
         <div id="featured" class="featured-grid"></div>
+      </section>
+
+      <!-- ===== ÉVÉNEMENTS & BILLETTERIE (Restaurant, Boîte de nuit, Hôtel) ===== -->
+      <section id="events" class="events-section">
+        <div class="container">
+          <header class="section-head split">
+            <div>
+              <p class="kicker">Agenda &amp; Expériences exclusives</p>
+              <h2 class="section-title">Événements &amp; Billetterie</h2>
+            </div>
+            <p class="section-note">Soirées clubbing, showcases, dîners gastronomiques et séjours à vivre.</p>
+          </header>
+
+          <!-- Barre de recherche (fidèle à l'interface fournie) -->
+          <form id="eventSearchForm" class="events-search-bar" role="search">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#6b7280" stroke-width="2" aria-hidden="true"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+            <input type="text" id="eventSearchInput" placeholder="Rechercher un évènement..." aria-label="Rechercher un évènement" />
+            <button type="submit" class="btn-search">Rechercher</button>
+          </form>
+
+          <!-- Filtres de lieux et ambiances -->
+          <div class="venue-filters" id="venueFilters">
+            <button type="button" class="venue-filter-btn active" data-venue="all">✨ Tous les événements</button>
+            <button type="button" class="venue-filter-btn" data-venue="nightclub">🪩 Boîte de nuit &amp; Soirées</button>
+            <button type="button" class="venue-filter-btn" data-venue="restaurant">🍽️ Restaurant &amp; Dîner-Concert</button>
+            <button type="button" class="venue-filter-btn" data-venue="hotel">🏨 Événements Hôtel &amp; Villa</button>
+          </div>
+
+          <!-- Les 5 Étapes du parcours (fidèle à l'image 2) -->
+          <div class="events-steps-card">
+            <h3 class="events-steps-title">Comment réserver votre expérience en 5 étapes simples</h3>
+            <div class="steps-list">
+              <div class="step-card-item">
+                <span class="step-num">01</span>
+                <div class="step-icon-bubble">🔍</div>
+                <div class="step-text-wrap"><h4 class="step-text-title">Trouvez votre événement</h4></div>
+                <span class="step-chevron">⌄</span>
+              </div>
+              <div class="step-card-item">
+                <span class="step-num">02</span>
+                <div class="step-icon-bubble">🎟️</div>
+                <div class="step-text-wrap"><h4 class="step-text-title">Choisissez votre billet</h4></div>
+                <span class="step-chevron">⌄</span>
+              </div>
+              <div class="step-card-item">
+                <span class="step-num">03</span>
+                <div class="step-icon-bubble">💳</div>
+                <div class="step-text-wrap"><h4 class="step-text-title">Payez en toute simplicité (Mobile Money ou Cash)</h4></div>
+                <span class="step-chevron">⌄</span>
+              </div>
+              <div class="step-card-item">
+                <span class="step-num">04</span>
+                <div class="step-icon-bubble">📱</div>
+                <div class="step-text-wrap"><h4 class="step-text-title">Recevez votre billet</h4></div>
+                <span class="step-chevron">⌄</span>
+              </div>
+              <div class="step-card-item">
+                <span class="step-num">05</span>
+                <div class="step-icon-bubble">🔳</div>
+                <div class="step-text-wrap"><h4 class="step-text-title">Présentez votre QR code</h4></div>
+                <span class="step-chevron">⌄</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Grille des cartes d'événements -->
+          <div id="eventsGrid" class="events-grid">
+            <p class="muted" style="grid-column:1/-1;text-align:center;padding:40px 0">Chargement des événements...</p>
+          </div>
+        </div>
       </section>
 
       <!-- COMMENT ÇA MARCHE -->
@@ -265,10 +337,30 @@
       </header>
       <div id="ordersList"></div>
     </div>
+
+    <!-- ===== VUE MES BILLETS & QR CODES ===== -->
+    <div id="viewTickets" class="container orders-view hidden">
+      <header class="section-head split">
+        <div>
+          <p class="kicker">Accès &amp; E-tickets</p>
+          <h2 class="section-title">Mes Billets d'Événements</h2>
+        </div>
+        <button class="btn secondary small" data-view="home">← Retour à l'accueil</button>
+      </header>
+      <div id="ticketsList"></div>
+    </div>
   </div>
 
   <!-- BOUTON PANIER -->
   <button id="cartFab" class="cart-fab"><svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 8h14l-1.2 11.1a2 2 0 0 1-2 1.9H8.2a2 2 0 0 1-2-1.9L5 8Z"/><path d="M9 8V6a3 3 0 0 1 6 0v2"/></svg> Panier <span id="cartCount" class="cart-badge">0</span></button>
+
+  <!-- MODALE RÉSERVATION BILLET D'ÉVÉNEMENT -->
+  <div id="ticketModalOverlay" class="modal-overlay" aria-hidden="true">
+    <div class="modal card" style="max-width:540px;max-height:90vh;overflow-y:auto" role="dialog" aria-modal="true" aria-labelledby="tktModalTitle">
+      <button class="close-x modal-close" id="ticketModalClose" aria-label="Fermer">&times;</button>
+      <div id="ticketModalContent"></div>
+    </div>
+  </div>
 
   <!-- TIROIR PANIER / COMMANDE -->
   <div id="drawerOverlay" class="drawer-overlay" aria-hidden="true"></div>
@@ -305,6 +397,7 @@
 
   <div id="toasts"></div>
 
+  <script src="/js/qr.js"></script>
   <script src="/js/common.js"></script>
   <script src="/js/client.js"></script>
 </body>
