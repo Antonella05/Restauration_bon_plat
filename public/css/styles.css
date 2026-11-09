@@ -862,84 +862,89 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 /* ============================================================
    ÉVÉNEMENTS & BILLETTERIE (Restaurant, Boîte de Nuit, Hôtel)
+   Charte « Bon de commande / Papier & Encre » — Style Premium
    ============================================================ */
 
 .events-section {
-  padding: 60px 0 80px;
-  background: linear-gradient(180deg, rgba(234, 223, 200, 0.4) 0%, rgba(243, 235, 220, 0.9) 100%);
+  padding: 80px 0;
   border-top: 1px solid var(--line);
   border-bottom: 1px solid var(--line);
-  margin: 60px 0;
+  margin: 70px 0;
+  background: var(--paper);
 }
 
-/* Barre de recherche d'événements (inspirée de l'interface fournie) */
+/* Barre de recherche d'événements */
 .events-search-bar {
   display: flex;
   align-items: center;
   gap: 12px;
-  max-width: 680px;
-  margin: 24px auto 30px;
-  background: #ffffff;
-  padding: 6px 8px 6px 20px;
+  max-width: 640px;
+  margin: 28px auto 24px;
+  background: var(--card);
+  padding: 6px 8px 6px 18px;
   border-radius: 999px;
-  border: 1px solid #d1d5db;
-  box-shadow: 0 4px 18px rgba(0, 0, 0, 0.06);
+  border: 1.5px solid var(--line-strong);
+  box-shadow: var(--shadow-sm);
+  transition: border-color .2s;
+}
+
+.events-search-bar:focus-within {
+  border-color: var(--ink);
 }
 
 .events-search-bar input {
   flex: 1;
   border: none;
   background: transparent;
-  font-size: 1.05rem;
-  color: #1f2937;
+  font-family: var(--sans);
+  font-size: 1rem;
+  color: var(--ink);
   outline: none;
   padding: 8px 0;
 }
 
 .events-search-bar input::placeholder {
-  color: #9ca3af;
+  color: var(--muted);
 }
 
 .events-search-bar .btn-search {
-  background: transparent;
-  color: #15803d;
-  border: 1.5px solid #16a34a;
-  padding: 10px 24px;
+  background: var(--ink);
+  color: #fff8ee;
+  border: 1.5px solid var(--ink);
+  padding: 9px 22px;
   border-radius: 999px;
+  font-family: var(--sans);
   font-weight: 600;
-  font-size: 0.98rem;
+  font-size: .92rem;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: background .2s, border-color .2s;
 }
 
 .events-search-bar .btn-search:hover {
-  background: #16a34a;
-  color: #ffffff;
-  box-shadow: 0 4px 12px rgba(22, 163, 74, 0.25);
+  background: var(--accent);
+  border-color: var(--accent);
 }
 
-/* Filtres par type de lieu (Restaurant, Boîte de nuit, Hôtel) */
+/* Filtres de catégories de lieux */
 .venue-filters {
   display: flex;
   justify-content: center;
   flex-wrap: wrap;
-  gap: 10px;
-  margin-bottom: 36px;
+  gap: 8px;
+  margin-bottom: 40px;
 }
 
 .venue-filter-btn {
-  background: var(--card);
+  background: transparent;
   border: 1px solid var(--line-strong);
   color: var(--ink);
-  padding: 8px 18px;
-  border-radius: 20px;
-  font-size: 0.9rem;
+  padding: 6px 16px;
+  border-radius: 999px;
+  font-family: var(--sans);
+  font-size: .86rem;
   font-weight: 500;
   cursor: pointer;
-  transition: all 0.2s ease;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+  transition: background .15s, border-color .15s, color .15s;
 }
 
 .venue-filter-btn:hover {
@@ -948,76 +953,77 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .venue-filter-btn.active {
   background: var(--ink);
-  color: #ffffff;
+  color: #fff8ee;
   border-color: var(--ink);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.15);
 }
 
-/* Les 5 étapes du parcours (Inspiré fidèlement de l'image 2) */
+/* Les 5 étapes du parcours (fidèle à la maquette de l'utilisateur) */
 .events-steps-card {
-  background: #ffffff;
-  border-radius: 20px;
+  background: var(--card);
+  border-radius: var(--radius-lg);
   padding: 32px 28px;
   max-width: 620px;
-  margin: 0 auto 50px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
-  border: 1px solid rgba(0, 0, 0, 0.06);
+  margin: 0 auto 52px;
+  box-shadow: var(--shadow-sm);
+  border: 1px solid var(--line-strong);
 }
 
 .events-steps-title {
   text-align: center;
-  font-family: var(--sans);
-  font-size: 1.15rem;
-  font-weight: 700;
-  color: #111827;
-  margin: 0 0 22px;
-  letter-spacing: -0.01em;
+  font-family: var(--serif);
+  font-size: 1.22rem;
+  font-weight: 400;
+  color: var(--ink);
+  margin: 0 0 24px;
 }
 
 .steps-list {
   display: flex;
   flex-direction: column;
-  gap: 14px;
+  gap: 12px;
 }
 
 .step-card-item {
   display: flex;
   align-items: center;
-  gap: 18px;
-  padding: 14px 22px;
-  background: #fbfdfb;
-  border: 1.5px solid #eef2ef;
-  border-radius: 16px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.02);
-  transition: transform 0.15s ease, border-color 0.15s ease;
+  gap: 16px;
+  padding: 12px 20px;
+  background: var(--paper);
+  border: 1px solid var(--line);
+  border-radius: var(--radius-lg);
+  transition: border-color .15s, transform .15s;
 }
 
 .step-card-item:hover {
+  border-color: var(--line-strong);
   transform: translateY(-1px);
-  border-color: #a7f3d0;
 }
 
 .step-num {
-  font-family: var(--sans);
-  font-weight: 800;
-  font-size: 1.45rem;
-  color: #fbbf24;
-  letter-spacing: -0.04em;
-  min-width: 34px;
+  font-family: var(--mono);
+  font-weight: 700;
+  font-size: 1.25rem;
+  color: var(--ochre);
+  letter-spacing: -.02em;
+  min-width: 30px;
 }
 
 .step-icon-bubble {
-  width: 44px;
-  height: 44px;
+  width: 38px;
+  height: 38px;
   border-radius: 50%;
-  background: #059669;
+  background: var(--leaf);
   color: #ffffff;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 1.25rem;
+  display: grid;
+  place-items: center;
   flex-shrink: 0;
-  box-shadow: 0 3px 10px rgba(5, 150, 105, 0.25);
+}
+
+.step-icon-bubble .icon {
+  width: 18px;
+  height: 18px;
+  stroke: #ffffff;
+  stroke-width: 1.8;
 }
 
 .step-text-wrap {
@@ -1026,16 +1032,23 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .step-text-title {
   font-family: var(--sans);
-  font-size: 1.05rem;
-  font-weight: 700;
-  color: #1f2937;
+  font-size: .98rem;
+  font-weight: 600;
+  color: var(--ink);
   margin: 0;
 }
 
 .step-chevron {
-  color: #4b5563;
-  font-size: 1.1rem;
-  opacity: 0.6;
+  color: var(--muted);
+  display: flex;
+  align-items: center;
+}
+
+.step-chevron .icon {
+  width: 16px;
+  height: 16px;
+  stroke: var(--muted);
+  stroke-width: 2;
 }
 
 /* Grille des événements */
@@ -1043,27 +1056,26 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
   gap: 32px;
-  margin-top: 24px;
+  margin-top: 10px;
 }
 
-/* Carte Événement Thème Sombre & Émeraude (fidèle à l'image 1) */
+/* Carte Événement Nocturne / Édition Spéciale (fidèle à l'image 1 dans l'esprit du site) */
 .event-card-dark {
-  background: radial-gradient(120% 120% at 50% 10%, #15221c 0%, #0a100d 100%);
-  border: 1px solid rgba(16, 185, 129, 0.35);
-  border-radius: 28px;
+  background: var(--night);
+  border: 1px solid var(--ink);
+  border-radius: var(--radius-lg);
   overflow: hidden;
-  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.45);
-  color: #ffffff;
+  box-shadow: var(--shadow);
+  color: var(--on-night);
   display: flex;
   flex-direction: column;
   position: relative;
-  transition: transform 0.25s ease, box-shadow 0.25s ease, border-color 0.25s ease;
+  transition: transform .3s cubic-bezier(.2,.7,.2,1), box-shadow .3s ease;
 }
 
 .event-card-dark:hover {
-  transform: translateY(-5px);
-  border-color: #10b981;
-  box-shadow: 0 25px 50px rgba(16, 185, 129, 0.2);
+  transform: translateY(-4px);
+  box-shadow: 0 24px 50px -15px rgba(20, 15, 11, .55);
 }
 
 .event-card-image-wrap {
@@ -1071,56 +1083,59 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   width: 100%;
   height: 220px;
   overflow: hidden;
+  background: var(--night-2);
 }
 
 .event-card-image-wrap img {
   width: 100%;
   height: 100%;
   object-fit: cover;
-  transition: transform 0.4s ease;
+  transition: transform .6s cubic-bezier(.2,.7,.2,1);
 }
 
 .event-card-dark:hover .event-card-image-wrap img {
-  transform: scale(1.05);
+  transform: scale(1.04);
 }
 
 .event-card-overlay {
   position: absolute;
   inset: 0;
-  background: linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(10, 16, 13, 0.95) 100%);
+  background: linear-gradient(180deg, rgba(26,20,16,.1) 0%, rgba(26,20,16,.9) 100%);
 }
 
 .event-badge-glow {
   position: absolute;
-  top: 18px;
-  right: 18px;
-  background: rgba(16, 185, 129, 0.9);
-  color: #032b1a;
-  font-size: 0.82rem;
-  font-weight: 800;
+  top: 14px;
+  right: 14px;
+  background: var(--leaf);
+  color: #fff8ee;
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 600;
   text-transform: uppercase;
-  padding: 6px 14px;
-  border-radius: 999px;
-  letter-spacing: 0.05em;
-  box-shadow: 0 0 16px rgba(16, 185, 129, 0.7);
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  letter-spacing: .06em;
+  border: 1px solid rgba(255, 255, 255, .15);
 }
 
 .event-venue-type-tag {
   position: absolute;
-  top: 18px;
-  left: 18px;
-  background: rgba(0, 0, 0, 0.7);
-  backdrop-filter: blur(8px);
-  color: #f3f4f6;
-  font-size: 0.8rem;
-  font-weight: 600;
-  padding: 6px 14px;
-  border-radius: 999px;
-  border: 1px solid rgba(255, 255, 255, 0.15);
+  top: 14px;
+  left: 14px;
+  background: rgba(26, 20, 16, .82);
+  backdrop-filter: blur(6px);
+  color: var(--on-night);
+  font-family: var(--mono);
+  font-size: .72rem;
+  font-weight: 500;
+  padding: 4px 10px;
+  border-radius: var(--radius);
+  border: 1px solid rgba(255, 255, 255, .1);
 }
 
 .event-card-body {
-  padding: 24px 26px;
+  padding: 24px;
   display: flex;
   flex-direction: column;
   flex: 1;
@@ -1130,63 +1145,54 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   display: flex;
   align-items: center;
   flex-wrap: wrap;
-  gap: 12px;
-  font-size: 0.76rem;
-  font-weight: 700;
-  color: #94a3b8;
-  letter-spacing: 0.08em;
+  gap: 8px;
+  font-family: var(--mono);
+  font-size: .72rem;
+  color: var(--on-night-muted);
+  letter-spacing: .06em;
   text-transform: uppercase;
-  margin-bottom: 12px;
-}
-
-.event-brands-row span {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
+  margin-bottom: 10px;
 }
 
 .event-card-title {
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-size: 1.35rem;
-  font-weight: 800;
-  line-height: 1.25;
-  color: #f8fafc;
-  margin: 0 0 8px;
-  letter-spacing: -0.01em;
+  line-height: 1.22;
+  color: #fff8ee;
+  margin: 0 0 6px;
 }
 
 .event-card-subtitle {
-  font-size: 0.92rem;
-  color: #a7f3d0;
-  font-weight: 500;
+  font-size: .9rem;
+  color: var(--ochre-soft);
   margin: 0 0 16px;
 }
 
 .event-meta-list {
   display: flex;
   flex-direction: column;
-  gap: 8px;
-  margin-bottom: 18px;
-  font-size: 0.95rem;
-  color: #e2e8f0;
+  gap: 7px;
+  margin-bottom: 16px;
+  font-size: .92rem;
+  color: var(--on-night);
 }
 
 .event-meta-item {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 9px;
 }
 
-.event-meta-icon {
-  font-size: 1.1rem;
-  width: 22px;
-  text-align: center;
-  color: #34d399;
+.event-meta-item .icon {
+  width: 17px;
+  height: 17px;
+  stroke: var(--ochre);
+  flex-shrink: 0;
 }
 
 .event-card-desc {
-  font-size: 0.9rem;
-  color: #94a3b8;
+  font-size: .88rem;
+  color: var(--on-night-muted);
   line-height: 1.5;
   margin: 0 0 20px;
   flex: 1;
@@ -1198,11 +1204,11 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 
 .event-card-foot {
   display: flex;
-  align-items: center;
+  align-items: baseline;
   justify-content: space-between;
-  gap: 16px;
-  padding-top: 18px;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  gap: 14px;
+  padding-top: 16px;
+  border-top: 1px solid rgba(255, 255, 255, .1);
   margin-top: auto;
 }
 
@@ -1212,57 +1218,59 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .event-price-label {
-  font-size: 0.74rem;
+  font-family: var(--mono);
+  font-size: .7rem;
   text-transform: uppercase;
-  color: #94a3b8;
-  letter-spacing: 0.05em;
+  color: var(--on-night-muted);
+  letter-spacing: .04em;
 }
 
 .event-price-amount {
   font-family: var(--mono);
-  font-size: 1.2rem;
-  font-weight: 700;
-  color: #34d399;
+  font-size: 1.15rem;
+  font-weight: 600;
+  color: var(--ochre);
 }
 
 .btn-book-ticket {
-  background: #059669;
+  background: var(--leaf);
   color: #ffffff;
-  border: none;
-  padding: 12px 22px;
-  border-radius: 999px;
-  font-weight: 700;
-  font-size: 0.98rem;
+  border: 1px solid var(--leaf);
+  padding: 9px 18px;
+  border-radius: var(--radius);
+  font-family: var(--sans);
+  font-weight: 600;
+  font-size: .92rem;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  transition: all 0.2s ease;
-  box-shadow: 0 4px 14px rgba(5, 150, 105, 0.4);
+  gap: 7px;
+  transition: background .2s, border-color .2s, transform .15s;
 }
 
 .btn-book-ticket:hover {
-  background: #10b981;
-  transform: translateY(-2px);
-  box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+  background: var(--accent);
+  border-color: var(--accent);
+  transform: translateY(-1px);
 }
 
 .btn-book-ticket:disabled {
-  background: #475569;
+  background: rgba(255, 255, 255, .15);
+  border-color: transparent;
+  color: var(--on-night-muted);
   cursor: not-allowed;
-  box-shadow: none;
   transform: none;
 }
 
-/* Modale de Réservation de Ticket */
+/* Modale de Réservation de Billet */
 .ticket-type-option {
   border: 1.5px solid var(--line);
-  background: var(--surface);
-  border-radius: 12px;
-  padding: 14px 16px;
-  margin-bottom: 10px;
+  background: var(--paper);
+  border-radius: var(--radius-lg);
+  padding: 12px 14px;
+  margin-bottom: 8px;
   cursor: pointer;
-  transition: border-color 0.2s, background 0.2s;
+  transition: border-color .15s, background .15s;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1273,98 +1281,101 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 }
 
 .ticket-type-option.selected {
-  border-color: #059669;
-  background: #ecfdf5;
+  border-color: var(--leaf);
+  background: #f1f8f3;
 }
 
 .ticket-type-option input[type="radio"] {
-  accent-color: #059669;
+  accent-color: var(--leaf);
 }
 
-/* Carte E-Billet Électronique */
+/* Carte E-Billet — Style Bon de Commande Officiel */
 .e-ticket-card {
-  background: #ffffff;
-  border-radius: 20px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.1);
+  background: var(--card);
+  border-radius: var(--radius-lg);
+  border: 1px solid var(--ink);
+  box-shadow: var(--hard);
   overflow: hidden;
-  max-width: 480px;
+  max-width: 440px;
   margin: 0 auto 24px;
   position: relative;
 }
 
 .e-ticket-header {
-  background: #0f172a;
-  color: #ffffff;
-  padding: 22px 24px;
+  background: var(--night);
+  color: #fff8ee;
+  padding: 18px 20px;
   position: relative;
 }
 
 .e-ticket-brand {
-  font-size: 0.78rem;
-  letter-spacing: 0.08em;
+  font-family: var(--mono);
+  font-size: .72rem;
+  letter-spacing: .08em;
   text-transform: uppercase;
-  color: #34d399;
-  font-weight: 700;
-  margin-bottom: 6px;
+  color: var(--ochre);
+  font-weight: 500;
+  margin-bottom: 4px;
 }
 
 .e-ticket-title {
-  font-family: var(--sans);
+  font-family: var(--serif);
   font-size: 1.25rem;
-  font-weight: 800;
-  color: #ffffff;
+  font-weight: 400;
+  color: #fff8ee;
   margin: 0 0 4px;
 }
 
 .e-ticket-venue {
-  font-size: 0.88rem;
-  color: #94a3b8;
+  font-size: .84rem;
+  color: var(--on-night-muted);
 }
 
 .e-ticket-tear {
   position: relative;
-  height: 24px;
-  background: #ffffff;
-  border-top: 2px dashed #cbd5e1;
+  height: 20px;
+  background: var(--card);
+  border-top: 2px dashed var(--line-strong);
 }
 
 .e-ticket-tear::before,
 .e-ticket-tear::after {
   content: "";
   position: absolute;
-  top: -14px;
-  width: 24px;
-  height: 24px;
-  background: var(--bg);
+  top: -11px;
+  width: 20px;
+  height: 20px;
+  background: var(--paper);
   border-radius: 50%;
+  border: 1px solid var(--line-strong);
 }
-.e-ticket-tear::before { left: -12px; }
-.e-ticket-tear::after { right: -12px; }
+.e-ticket-tear::before { left: -11px; }
+.e-ticket-tear::after { right: -11px; }
 
 .e-ticket-body {
-  padding: 10px 24px 24px;
+  padding: 10px 20px 20px;
   text-align: center;
 }
 
 .e-ticket-qr-wrap {
   display: inline-block;
-  padding: 14px;
+  padding: 12px;
   background: #ffffff;
-  border-radius: 14px;
-  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08);
-  margin-bottom: 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line-strong);
+  margin-bottom: 12px;
 }
 
 .e-ticket-code {
   font-family: var(--mono);
-  font-size: 1.3rem;
-  font-weight: 700;
-  letter-spacing: 0.08em;
-  color: #0f172a;
-  background: #f1f5f9;
-  padding: 6px 14px;
-  border-radius: 8px;
+  font-size: 1.15rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  color: var(--ink);
+  background: var(--paper);
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
   display: inline-block;
   margin-bottom: 14px;
 }
@@ -1372,87 +1383,93 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 .e-ticket-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 12px;
+  gap: 10px;
   text-align: left;
-  background: #f8fafc;
-  padding: 14px 18px;
-  border-radius: 12px;
-  font-size: 0.88rem;
-  margin-bottom: 16px;
+  background: var(--paper);
+  padding: 12px 14px;
+  border-radius: var(--radius);
+  border: 1px solid var(--line);
+  font-size: .86rem;
+  margin-bottom: 14px;
 }
 
 .e-ticket-grid div dt {
-  color: #64748b;
-  font-size: 0.74rem;
+  font-family: var(--mono);
+  color: var(--muted);
+  font-size: .7rem;
   text-transform: uppercase;
+  letter-spacing: .04em;
   margin-bottom: 2px;
 }
 
 .e-ticket-grid div dd {
   margin: 0;
   font-weight: 600;
-  color: #0f172a;
+  color: var(--ink);
 }
 
 .e-ticket-status-pill {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 6px 16px;
-  border-radius: 999px;
-  font-size: 0.85rem;
-  font-weight: 700;
+  padding: 4px 12px;
+  border-radius: var(--radius);
+  font-family: var(--mono);
+  font-size: .78rem;
   text-transform: uppercase;
+  letter-spacing: .04em;
 }
 
 .e-ticket-status-valid {
-  background: #dcfce7;
-  color: #15803d;
+  background: #d4ebd4;
+  color: #1a4d1a;
+  border: 1px solid #a8dca8;
 }
 
 .e-ticket-status-used {
-  background: #fee2e2;
-  color: #b91c1c;
+  background: #f8d7da;
+  color: #721c24;
+  border: 1px solid #f5c6cb;
 }
 
-/* Backoffice Staff - Billetterie & Contrôle */
+/* Backoffice Staff - Contrôle d'accès & Scanner */
 .staff-scan-box {
-  background: #ffffff;
-  border: 2px dashed #059669;
-  border-radius: 16px;
+  background: var(--card);
+  border: 1.5px dashed var(--leaf);
+  border-radius: var(--radius-lg);
   padding: 24px;
   text-align: center;
   margin-bottom: 28px;
 }
 
 .staff-scan-input {
-  max-width: 420px;
-  margin: 12px auto;
+  max-width: 380px;
+  margin: 10px auto;
   font-family: var(--mono);
-  font-size: 1.25rem;
+  font-size: 1.18rem;
   text-transform: uppercase;
   text-align: center;
-  letter-spacing: 0.06em;
+  letter-spacing: .06em;
 }
 
 .scan-alert-success {
-  background: #dcfce7;
-  border: 1px solid #86efac;
-  color: #14532d;
-  padding: 16px 20px;
-  border-radius: 12px;
-  margin-top: 16px;
-  font-weight: 600;
+  background: #eef7ee;
+  border: 1px solid #bce2bc;
+  color: #1a4d1a;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-top: 14px;
+  font-size: .94rem;
 }
 
 .scan-alert-error {
-  background: #fee2e2;
-  border: 1px solid #fca5a5;
-  color: #7f1d1d;
-  padding: 16px 20px;
-  border-radius: 12px;
-  margin-top: 16px;
-  font-weight: 600;
+  background: #fdf2f2;
+  border: 1px solid #f8c8c8;
+  color: #7a1c1c;
+  padding: 14px 18px;
+  border-radius: var(--radius);
+  margin-top: 14px;
+  font-size: .94rem;
 }
 
 @media print {
@@ -1460,4 +1477,5 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
   .e-ticket-card, .e-ticket-card * { visibility: visible; }
   .e-ticket-card { position: absolute; left: 0; top: 0; width: 100%; box-shadow: none; border: 1px solid #000; }
 }
+
 

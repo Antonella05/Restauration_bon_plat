@@ -218,13 +218,14 @@
 
         <!-- Scanner & Contrôle d'accès à l'entrée -->
         <div class="card staff-scan-box">
-          <div style="display:inline-flex;align-items:center;gap:8px;font-size:1.1rem;font-weight:700;color:#059669;margin-bottom:6px">
-            <span>📷</span> Contrôle d'Accès &amp; Validation des Billets (Check-in)
+          <div style="display:inline-flex;align-items:center;gap:8px;font-size:1.05rem;font-weight:600;color:var(--ink);margin-bottom:6px">
+            <svg class="icon" viewBox="0 0 24 24" style="width:20px;height:20px" aria-hidden="true"><rect x="4" y="4" width="6" height="6"/><rect x="14" y="4" width="6" height="6"/><rect x="4" y="14" width="6" height="6"/><path d="M14 14h2v2h-2zm4 0h2v2h-2zm-4 4h2v2h-2zm4 0h2v2h-2z"/></svg>
+            Contrôle d'accès &amp; Validation des billets
           </div>
-          <p class="muted" style="margin:0 0 14px;font-size:.88rem">Scannez le QR code du client ou saisissez la référence du billet pour autoriser ou refuser l'entrée.</p>
+          <p class="muted" style="margin:0 0 14px;font-size:.88rem">Scannez le QR code du client ou saisissez la référence du billet pour vérifier l'accès.</p>
           <form id="checkinForm" style="display:flex;gap:10px;justify-content:center;max-width:540px;margin:0 auto">
             <input id="checkinCodeInput" class="field staff-scan-input" placeholder="Ex. TKT-2026-X8Y2" autocomplete="off" style="margin:0" required />
-            <button class="btn success" type="submit" style="padding:10px 22px;white-space:nowrap">Valider l'entrée</button>
+            <button class="btn" type="submit" style="padding:10px 22px;white-space:nowrap">Composter l'entrée</button>
           </form>
           <div id="scanResultArea"></div>
         </div>

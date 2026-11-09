@@ -740,13 +740,24 @@
 
   /* ============================================================
      ÉVÉNEMENTS & BILLETTERIE (Restaurant, Boîte de nuit, Hôtel)
+     Style Premium conforme à la charte « bon de commande »
      ============================================================ */
 
   const VENUE_CONFIG = {
-    restaurant: { label: '🍽️ Restaurant & Live', icon: '🍽️', tag: 'Restaurant & Gastronomie' },
-    nightclub: { label: '🪩 Boîte de nuit', icon: '🪩', tag: 'Clubbing & Nightlife' },
-    hotel: { label: '🏨 Événement Hôtel', icon: '🏨', tag: 'Hôtel & Villa Prestige' },
-    lounge: { label: '🍸 Bar-Lounge', icon: '🍸', tag: 'Lounge & Rooftop' },
+    restaurant: { label: 'Restaurant & Live', tag: 'Restaurant & Gastronomie' },
+    nightclub: { label: 'Boîte de nuit', tag: 'Soirées Club & DJ' },
+    hotel: { label: 'Hôtel & Séjours', tag: 'Hôtel & Expériences' },
+    lounge: { label: 'Bar-Lounge', tag: 'Lounge & Rooftop' },
+  };
+
+  const ICONS_SVG = {
+    calendar: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg>`,
+    pin: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2a7 7 0 0 0-7 7c0 5 7 13 7 13s7-8 7-13a7 7 0 0 0-7-7Z"/><circle cx="12" cy="9" r="2.5"/></svg>`,
+    ticket: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8a2 2 0 0 1 2-2h12a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V8Z"/><path d="M10 6v12"/></svg>`,
+    card: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="6" width="18" height="12" rx="2"/><path d="M3 10h18"/><path d="M7 15h3"/></svg>`,
+    phone: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="7" y="3" width="10" height="18" rx="2"/><path d="M11 18h2"/></svg>`,
+    cash: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><rect x="2" y="6" width="20" height="12" rx="2"/><circle cx="12" cy="12" r="3"/><path d="M6 12h.01M18 12h.01"/></svg>`,
+    print: `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>`,
   };
 
   function formatEventDate(dateStr, timeStr) {
@@ -787,11 +798,11 @@
     if (!grid) return;
     if (!eventsList.length) {
       grid.innerHTML = `
-        <div style="grid-column:1/-1;text-align:center;padding:48px 20px;background:var(--card);border-radius:18px;border:1px solid var(--line)">
-          <div style="font-size:2.4rem;margin-bottom:12px">🎭</div>
+        <div style="grid-column:1/-1;text-align:center;padding:48px 20px;background:var(--card);border-radius:var(--radius-lg);border:1px solid var(--line-strong)">
+          <div style="margin-bottom:12px;color:var(--muted)">${ICONS_SVG.ticket}</div>
           <h3 style="margin:0 0 8px">Aucun événement ne correspond à votre recherche</h3>
-          <p class="muted" style="margin:0 0 16px">Essayez un autre mot-clé ou réinitialisez les filtres.</p>
-          <button class="btn small secondary" id="resetEventFilters">Voir tous les événements</button>
+          <p class="muted" style="margin:0 0 16px">Modifiez vos critères ou réinitialisez les filtres.</p>
+          <button class="btn small secondary" id="resetEventFilters">Afficher tous les événements</button>
         </div>`;
       const r = $('#resetEventFilters');
       if (r) r.addEventListener('click', () => {
@@ -820,25 +831,25 @@
           <div class="event-card-image-wrap">
             <img src="${escapeHtml(img)}" alt="${escapeHtml(ev.title)}" loading="lazy" />
             <div class="event-card-overlay"></div>
-            <span class="event-venue-type-tag">${venue.icon} ${venue.tag}</span>
+            <span class="event-venue-type-tag">${escapeHtml(venue.tag)}</span>
             ${ev.badge ? `<span class="event-badge-glow">${escapeHtml(ev.badge)}</span>` : ''}
           </div>
           <div class="event-card-body">
             <div class="event-brands-row">
-              <span>★ ${escapeHtml(ev.organizer || 'LE BON PLAT')}</span>
-              <span>•</span>
-              <span>${venue.icon} ${escapeHtml(ev.venue_name)}</span>
+              <span>${escapeHtml(ev.organizer || 'LE BON PLAT')}</span>
+              <span>—</span>
+              <span>${escapeHtml(ev.venue_name)}</span>
             </div>
             <h3 class="event-card-title">${escapeHtml(ev.title)}</h3>
             ${ev.subtitle ? `<div class="event-card-subtitle">${escapeHtml(ev.subtitle)}</div>` : ''}
             
             <div class="event-meta-list">
               <div class="event-meta-item">
-                <span class="event-meta-icon">📍</span>
+                <span class="event-meta-icon">${ICONS_SVG.pin}</span>
                 <span>${escapeHtml(ev.venue_name)} · <strong>${escapeHtml(ev.location)}</strong></span>
               </div>
               <div class="event-meta-item">
-                <span class="event-meta-icon">📅</span>
+                <span class="event-meta-icon">${ICONS_SVG.calendar}</span>
                 <span>${formatEventDate(ev.event_date, ev.event_time)}</span>
               </div>
             </div>
@@ -848,10 +859,10 @@
             <div class="event-card-foot">
               <div class="event-price-box">
                 <span class="event-price-label">${isSoldOut ? 'Statut' : 'Tarif'}</span>
-                <span class="event-price-amount">${isSoldOut ? 'COMPLET' : (ev.min_price ? 'À partir de ' + fmtMoney(ev.min_price) : 'Entrée libre')}</span>
+                <span class="event-price-amount">${isSoldOut ? 'Complet' : (ev.min_price ? fmtMoney(ev.min_price) : 'Entrée libre')}</span>
               </div>
               <button class="btn-book-ticket" data-book-event="${ev.id}" ${isSoldOut ? 'disabled' : ''}>
-                ${isSoldOut ? 'Complet' : '🎫 Réserver maintenant'}
+                ${ICONS_SVG.ticket} ${isSoldOut ? 'Complet' : 'Réserver un billet'}
               </button>
             </div>
           </div>
@@ -912,13 +923,13 @@
 
       container.innerHTML = `
         <div style="margin-bottom:18px">
-          <span class="badge" style="background:#059669;color:#ffffff;margin-bottom:8px">Billetterie officielle</span>
+          <span class="badge secondary" style="margin-bottom:8px">Billetterie</span>
           <h2 id="tktModalTitle" style="margin:4px 0 6px;font-size:1.35rem">${escapeHtml(ev.title)}</h2>
-          <div class="muted" style="font-size:.88rem">📍 ${escapeHtml(ev.venue_name)} (${escapeHtml(ev.location)}) · 📅 ${formatEventDate(ev.event_date, ev.event_time)}</div>
+          <div class="muted" style="font-size:.88rem">${escapeHtml(ev.venue_name)} (${escapeHtml(ev.location)}) · ${formatEventDate(ev.event_date, ev.event_time)}</div>
         </div>
 
         <form id="ticketBookingForm">
-          <label style="display:block;font-weight:700;margin-bottom:8px">1. Choisissez votre type de billet :</label>
+          <label style="display:block;font-weight:600;margin-bottom:8px">1. Choisissez votre formule :</label>
           <div style="margin-bottom:18px">
             ${tickets.map((t) => {
               const sel = t.id === selectedTicketId;
@@ -930,12 +941,12 @@
                     <div>
                       <strong style="color:var(--ink);font-size:1rem">${escapeHtml(t.name)}</strong>
                       ${t.description ? `<div class="muted" style="font-size:.82rem">${escapeHtml(t.description)}</div>` : ''}
-                      <div style="font-size:.76rem;color:#059669;font-weight:600;margin-top:2px">
+                      <div style="font-size:.76rem;color:var(--muted);margin-top:2px">
                         ${soldOut ? 'Complet' : `${t.available_left} places disponibles`}
                       </div>
                     </div>
                   </div>
-                  <div style="font-family:var(--mono);font-weight:700;font-size:1.1rem;color:#059669">
+                  <div style="font-family:var(--mono);font-weight:600;font-size:1.05rem;color:var(--ink)">
                     ${fmtMoney(t.price)}
                   </div>
                 </div>
@@ -944,59 +955,59 @@
           </div>
 
           <div class="field" style="margin-bottom:16px">
-            <label for="modalTktQty" style="font-weight:700">2. Nombre de places :</label>
+            <label for="modalTktQty" style="font-weight:600">2. Nombre de places :</label>
             <div style="display:flex;align-items:center;gap:12px">
-              <input id="modalTktQty" type="number" min="1" max="${maxQty}" value="1" style="width:100px;font-family:var(--mono);font-size:1.1rem;font-weight:700;padding:8px" />
-              <span class="muted" style="font-size:.85rem">Max ${maxQty} billet(s) par réservation</span>
+              <input id="modalTktQty" type="number" min="1" max="${maxQty}" value="1" style="width:90px;font-family:var(--mono);font-size:1.05rem;font-weight:600;padding:8px" />
+              <span class="muted" style="font-size:.84rem">Maximum ${maxQty} billet(s)</span>
             </div>
           </div>
 
-          <div style="margin-bottom:18px;background:var(--card);padding:14px;border-radius:12px;border:1px solid var(--line)">
-            <label style="display:block;font-weight:700;margin-bottom:10px">3. Coordonnées de l'acheteur :</label>
+          <div style="margin-bottom:18px;background:var(--paper);padding:14px;border-radius:var(--radius-lg);border:1px solid var(--line)">
+            <label style="display:block;font-weight:600;margin-bottom:10px">3. Coordonnées du titulaire :</label>
             <div class="field" style="margin-bottom:10px">
               <label for="modalTktName">Nom complet *</label>
               <input id="modalTktName" type="text" value="${escapeHtml(u.name || '')}" placeholder="Ex. Marc Houessou" required />
             </div>
             <div class="field" style="margin-bottom:10px">
-              <label for="modalTktPhone">Numéro de téléphone (Mobile Money / SMS) *</label>
+              <label for="modalTktPhone">Téléphone (Mobile Money ou contact) *</label>
               <input id="modalTktPhone" type="tel" value="${escapeHtml(u.phone || '')}" placeholder="Ex. 97 00 00 00" required />
             </div>
             <div class="field">
-              <label for="modalTktEmail">Email (optionnel, pour recevoir le e-ticket)</label>
+              <label for="modalTktEmail">Email (optionnel)</label>
               <input id="modalTktEmail" type="email" placeholder="Ex. marc@example.com" />
             </div>
           </div>
 
           <div style="margin-bottom:20px">
-            <label style="display:block;font-weight:700;margin-bottom:8px">4. Mode de paiement :</label>
+            <label style="display:block;font-weight:600;margin-bottom:8px">4. Mode de règlement :</label>
             <div class="radio-row">
               <div class="radio-card active" data-tkt-pay="momo_mtn">
-                <span style="font-size:1.3rem">🟡</span> MTN MoMo
-                <small>Paiement sécurisé</small>
+                ${ICONS_SVG.phone} MTN MoMo
+                <small>Paiement mobile</small>
               </div>
               <div class="radio-card" data-tkt-pay="momo_moov">
-                <span style="font-size:1.3rem">🔵</span> Moov Money
-                <small>Paiement sécurisé</small>
+                ${ICONS_SVG.phone} Moov Money
+                <small>Paiement mobile</small>
               </div>
               <div class="radio-card" data-tkt-pay="cash">
-                <span style="font-size:1.3rem">💵</span> À l'entrée
+                ${ICONS_SVG.cash} À l'entrée
                 <small>Paiement sur place</small>
               </div>
             </div>
           </div>
 
-          <div style="background:#ecfdf5;border:1.5px solid #a7f3d0;padding:14px 18px;border-radius:14px;margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
+          <div style="background:var(--card);border:1px solid var(--line-strong);padding:14px 18px;border-radius:var(--radius);margin-bottom:20px;display:flex;align-items:center;justify-content:space-between">
             <div>
-              <div style="font-size:.82rem;text-transform:uppercase;color:#047857;font-weight:700">Total à payer</div>
+              <div style="font-family:var(--mono);font-size:.74rem;text-transform:uppercase;color:var(--muted)">Total de la réservation</div>
               <div class="muted" style="font-size:.82rem" id="modalTktSummary">1 × ${escapeHtml(selectedTicket.name)}</div>
             </div>
-            <div style="font-family:var(--mono);font-size:1.35rem;font-weight:800;color:#059669" id="modalTktTotal">
+            <div style="font-family:var(--mono);font-size:1.3rem;font-weight:700;color:var(--ink)" id="modalTktTotal">
               ${fmtMoney(selectedTicket.price)}
             </div>
           </div>
 
-          <button class="btn block success" id="submitTicketBtn" type="submit" style="padding:14px;font-size:1.05rem">
-            🎟️ Confirmer &amp; Obtenir mon billet
+          <button class="btn block" id="submitTicketBtn" type="submit" style="padding:13px;font-size:1rem">
+            Confirmer la réservation
           </button>
         </form>
       `;
@@ -1036,7 +1047,7 @@
         e.preventDefault();
         const submitBtn = $('#submitTicketBtn');
         submitBtn.disabled = true;
-        submitBtn.textContent = 'Génération de votre billet...';
+        submitBtn.textContent = 'Validation en cours...';
 
         const name = ($('#modalTktName').value || '').trim();
         const phone = ($('#modalTktPhone').value || '').trim();
@@ -1059,14 +1070,14 @@
             },
           });
 
-          toast('Billet réservé avec succès !', 'success');
+          toast('Billet réservé avec succès', 'success');
           renderTicketSuccess(bookingResult);
           loadEvents();
           if (isClient()) loadMyTickets();
         } catch (err) {
           toast(err.message || 'Échec de la réservation.', 'error');
           submitBtn.disabled = false;
-          submitBtn.textContent = '🎟️ Confirmer & Obtenir mon billet';
+          submitBtn.textContent = 'Confirmer la réservation';
         }
       });
     }
@@ -1098,20 +1109,19 @@
     const container = $('#ticketModalContent');
     const { ticket, event, ticket_type } = bookingResult;
 
-    const qrSvg = QRCodeGen.generateSvg(ticket.ticket_code, { size: 190, fg: '#0f172a' });
+    const qrSvg = QRCodeGen.generateSvg(ticket.ticket_code, { size: 180, fg: '#1c1611', bg: '#ffffff' });
 
     container.innerHTML = `
       <div style="text-align:center;margin-bottom:14px">
-        <div style="font-size:2.8rem">🎉</div>
-        <h2 style="margin:2px 0 4px;font-size:1.3rem">Félicitations ! Votre billet est prêt</h2>
-        <p class="muted" style="margin:0 0 16px;font-size:.88rem">Conservez précieusement ce e-ticket pour votre accès.</p>
+        <h2 style="margin:2px 0 4px;font-size:1.3rem">Votre billet électronique est prêt</h2>
+        <p class="muted" style="margin:0 0 16px;font-size:.88rem">Présentez ce bon d'accès à votre arrivée.</p>
       </div>
 
       <div class="e-ticket-card">
         <div class="e-ticket-header">
-          <div class="e-ticket-brand">★ BILLET OFFICIEL ÉLECTRONIQUE</div>
+          <div class="e-ticket-brand">Billet officiel d'accès</div>
           <h3 class="e-ticket-title">${escapeHtml(event.title)}</h3>
-          <div class="e-ticket-venue">📍 ${escapeHtml(event.venue_name)} · ${escapeHtml(event.location)}</div>
+          <div class="e-ticket-venue">${escapeHtml(event.venue_name)} · ${escapeHtml(event.location)}</div>
         </div>
         <div class="e-ticket-tear"></div>
         <div class="e-ticket-body">
@@ -1133,18 +1143,18 @@
               <dd>${formatEventDate(event.event_date, event.event_time)}</dd>
             </div>
             <div>
-              <dt>Total Réglé</dt>
+              <dt>Total réglé</dt>
               <dd>${fmtMoney(ticket.total_price)}</dd>
             </div>
           </div>
-          <div style="margin: 12px 0">
-            <span class="e-ticket-status-pill e-ticket-status-valid">● Billet Valide (Entrée autorisée)</span>
+          <div style="margin: 10px 0">
+            <span class="e-ticket-status-pill e-ticket-status-valid">Billet valide</span>
           </div>
-          <p class="muted" style="font-size:0.82rem;margin: 8px 0 16px">Présentez ce QR code à l'accueil pour être scanné et composté.</p>
+          <p class="muted" style="font-size:0.8rem;margin: 8px 0 16px">Présentez ce QR code à l'accueil pour compostage.</p>
           <div class="flex" style="gap:10px;justify-content:center;flex-wrap:wrap">
-            <button class="btn secondary small" id="printTicketBtn">🖨️ Imprimer / Enregistrer</button>
-            <button class="btn small" id="viewAllMyTicketsBtn">Voir tous mes billets</button>
-            <button class="btn secondary small" id="closeTicketModalDoneBtn">Terminer</button>
+            <button class="btn secondary small" id="printTicketBtn">${ICONS_SVG.print} Imprimer le billet</button>
+            <button class="btn small" id="viewAllMyTicketsBtn">Consulter mes billets</button>
+            <button class="btn secondary small" id="closeTicketModalDoneBtn">Fermer</button>
           </div>
         </div>
       </div>
@@ -1179,28 +1189,28 @@
     if (!myTickets.length) {
       list.innerHTML = `
         <div class="card empty-orders" style="padding:48px 24px;text-align:center">
-          <div style="font-size:2.8rem;margin-bottom:12px">🎟️</div>
-          <h3>Vous n'avez aucun billet pour le moment</h3>
-          <p class="muted" style="margin:0 0 20px">Découvrez nos soirées clubbing, dîners-concerts et événements exclusifs.</p>
-          <button class="btn" data-scroll="#events">Parcourir les événements</button>
+          <div style="margin-bottom:12px;color:var(--muted)">${ICONS_SVG.ticket}</div>
+          <h3>Aucun billet pour le moment</h3>
+          <p class="muted" style="margin:0 0 20px">Découvrez la programmation de nos soirées, concerts et événements.</p>
+          <button class="btn" data-scroll="#events">Consulter les événements</button>
         </div>`;
       $$('#ticketsList [data-scroll]').forEach((b) => b.addEventListener('click', () => smoothTo(b.dataset.scroll)));
       return;
     }
 
     list.innerHTML = `
-      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(360px, 1fr));gap:28px">
+      <div style="display:grid;grid-template-columns:repeat(auto-fit, minmax(340px, 1fr));gap:28px">
         ${myTickets.map((t) => {
-          const qrSvg = QRCodeGen.generateSvg(t.ticket_code, { size: 170, fg: '#0f172a' });
+          const qrSvg = QRCodeGen.generateSvg(t.ticket_code, { size: 160, fg: '#1c1611', bg: '#ffffff' });
           const isValid = t.status === 'valid';
           const isUsed = t.status === 'used';
 
           return `
             <div class="e-ticket-card" style="margin:0">
               <div class="e-ticket-header">
-                <div class="e-ticket-brand">★ BILLET OFFICIEL ÉLECTRONIQUE</div>
+                <div class="e-ticket-brand">Billet officiel d'accès</div>
                 <h3 class="e-ticket-title">${escapeHtml(t.event_title)}</h3>
-                <div class="e-ticket-venue">📍 ${escapeHtml(t.venue_name)} · ${escapeHtml(t.event_location)}</div>
+                <div class="e-ticket-venue">${escapeHtml(t.venue_name)} · ${escapeHtml(t.event_location)}</div>
               </div>
               <div class="e-ticket-tear"></div>
               <div class="e-ticket-body">
@@ -1226,13 +1236,13 @@
                     <dd>${fmtMoney(t.total_price)}</dd>
                   </div>
                 </div>
-                <div style="margin: 12px 0">
+                <div style="margin: 10px 0">
                   <span class="e-ticket-status-pill ${isValid ? 'e-ticket-status-valid' : 'e-ticket-status-used'}">
-                    ${isValid ? '● Billet Valide (Entrée autorisée)' : `✕ Composté le ${t.used_at || 'antérieurement'}`}
+                    ${isValid ? 'Billet valide' : `Composté (${t.used_at || 'antérieurement'})`}
                   </span>
                 </div>
                 <div class="flex" style="gap:10px;justify-content:center">
-                  <button class="btn secondary small" onclick="window.print()">🖨️ Imprimer</button>
+                  <button class="btn secondary small" onclick="window.print()">${ICONS_SVG.print} Imprimer</button>
                 </div>
               </div>
             </div>

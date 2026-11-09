@@ -921,8 +921,8 @@
             <div class="muted" style="font-size:.78rem">${escapeHtml(ev.location)}</div>
           </td>
           <td style="white-space:nowrap">
-            <div>📅 ${escapeHtml(ev.event_date)}</div>
-            <div class="muted">🕒 ${escapeHtml(ev.event_time)}</div>
+            <div>${escapeHtml(ev.event_date)}</div>
+            <div class="muted">${escapeHtml(ev.event_time)}</div>
           </td>
           <td>
             <strong>${totalSold} / ${totalCapacity}</strong> places
@@ -999,7 +999,7 @@
           <td><strong style="font-family:var(--mono);color:#0f172a">${escapeHtml(t.ticket_code)}</strong></td>
           <td>
             <strong>${escapeHtml(t.event_title)}</strong>
-            <div class="muted" style="font-size:.78rem">📅 ${escapeHtml(t.event_date)}</div>
+            <div class="muted" style="font-size:.78rem">${escapeHtml(t.event_date)}</div>
           </td>
           <td><strong>${escapeHtml(t.customer_name)}</strong></td>
           <td><a href="tel:${escapeHtml(t.customer_phone)}">${escapeHtml(t.customer_phone)}</a></td>
@@ -1056,22 +1056,22 @@
 
       area.innerHTML = `
         <div class="scan-alert-success">
-          <div style="font-size:1.3rem;margin-bottom:4px">✅ ACCÈS AUTORISÉ &amp; COMPOSTÉ</div>
+          <div style="font-weight:700;font-size:1.05rem;margin-bottom:4px;text-transform:uppercase">Accès autorisé &amp; composté</div>
           <div>${escapeHtml(res.message)}</div>
-          <div style="margin-top:6px;font-size:.88rem;opacity:.9">Code: <strong>${escapeHtml(res.ticket.ticket_code)}</strong> · Événement: <strong>${escapeHtml(res.ticket.event_title)}</strong></div>
+          <div style="margin-top:6px;font-size:.85rem;opacity:.9">Code : <strong>${escapeHtml(res.ticket.ticket_code)}</strong> · Événement : <strong>${escapeHtml(res.ticket.event_title)}</strong></div>
         </div>
       `;
-      toast('Entrée validée avec succès !', 'success');
+      toast('Entrée validée avec succès', 'success');
       loadStaffEvents();
     } catch (err) {
       area.innerHTML = `
         <div class="scan-alert-error">
-          <div style="font-size:1.3rem;margin-bottom:4px">⛔ REFUS D'ENTRÉE</div>
+          <div style="font-weight:700;font-size:1.05rem;margin-bottom:4px;text-transform:uppercase">Refus d'entrée</div>
           <div>${escapeHtml(err.message)}</div>
-          <div style="margin-top:6px;font-size:.88rem;opacity:.9">Code scanné : <strong>${escapeHtml(code)}</strong></div>
+          <div style="margin-top:6px;font-size:.85rem;opacity:.9">Code scanné : <strong>${escapeHtml(code)}</strong></div>
         </div>
       `;
-      toast('Échec du contrôle d\'accès', 'error');
+      toast('Contrôle d\'accès : refus', 'error');
     }
   }
 
@@ -1097,15 +1097,15 @@
           </div>
           <div class="field">
             <label for="evSubtitle">Sous-titre / Thème</label>
-            <input id="evSubtitle" value="${escapeHtml(ev && ev.subtitle ? ev.subtitle : '')}" placeholder="Ex. Séance Principale · Inauguration" />
+            <input id="evSubtitle" value="${escapeHtml(ev && ev.subtitle ? ev.subtitle : '')}" placeholder="Ex. Inauguration du nouvel espace Le Cercle" />
           </div>
           <div class="field">
             <label for="evVenueType">Type d'espace / Ambiance *</label>
             <select id="evVenueType" class="field" style="margin:0">
-              <option value="restaurant" ${ev && ev.venue_type === 'restaurant' ? 'selected' : ''}>🍽️ Restaurant & Gastronomie</option>
-              <option value="nightclub" ${ev && ev.venue_type === 'nightclub' ? 'selected' : ''}>🪩 Boîte de nuit & Soirées DJ</option>
-              <option value="hotel" ${ev && ev.venue_type === 'hotel' ? 'selected' : ''}>🏨 Événement Hôtel & Séjours</option>
-              <option value="lounge" ${ev && ev.venue_type === 'lounge' ? 'selected' : ''}>🍸 Bar-Lounge & Rooftop</option>
+              <option value="restaurant" ${ev && ev.venue_type === 'restaurant' ? 'selected' : ''}>Restaurant &amp; Gastronomie</option>
+              <option value="nightclub" ${ev && ev.venue_type === 'nightclub' ? 'selected' : ''}>Boîte de nuit &amp; Soirées DJ</option>
+              <option value="hotel" ${ev && ev.venue_type === 'hotel' ? 'selected' : ''}>Événement Hôtel &amp; Séjours</option>
+              <option value="lounge" ${ev && ev.venue_type === 'lounge' ? 'selected' : ''}>Bar-Lounge &amp; Rooftop</option>
             </select>
           </div>
           <div class="flex" style="gap:10px">
